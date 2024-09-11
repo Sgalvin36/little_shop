@@ -70,7 +70,7 @@ describe "Items API" do
         expect(item.name).to eq("pizza")
         expect(item.description).to eq("The best handheld food around!")
         expect(item.unit_price).to eq(42.00)
-        expect(item.merchant_id).to eq(new_id)
+        expect(item.merchant_id).to eq(@merchant.id)
     end
 
     it "can update an existing Item" do 
@@ -93,7 +93,7 @@ describe "Items API" do
     it "can destroy an item" do
         item = Item.create(name: "REGRET",
             description: "Hard work rarely pays off.",
-            price: 69.00,
+            unit_price: 69.00,
             merchant_id: @merchant.id)
         
         expect(Item.count).to eq(5)
