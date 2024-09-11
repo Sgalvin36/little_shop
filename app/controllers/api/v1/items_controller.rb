@@ -1,4 +1,9 @@
 class Api::V1::ItemsController < ApplicationController
+    def index
+      @items = Item.all
+      render json: ItemSerializer.new(@items).serializable_hash.to_json
+    end
+
     def create
         render json: Item.create(item_params)
     end
@@ -14,3 +19,4 @@ class Api::V1::ItemsController < ApplicationController
         params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
     end
 end
+
