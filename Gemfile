@@ -41,10 +41,16 @@ group :development, :test do
   gem "pry"
   gem "simplecov"
   gem "rspec-rails"
+  gem "shoulda-matchers"
+  gem "faker"
+  gem "factory_bot_rails"
+
 end
 
 group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
 end
+
+gem 'jsonapi-serializer'
 
