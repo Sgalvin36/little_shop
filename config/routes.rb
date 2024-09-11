@@ -12,4 +12,5 @@ Rails.application.routes.draw do
 
   
   post "/api/v1/items", to: "api/v1/items#create"
+  patch "/api/v1/items/:id", to: "api/v1/items#update"
 end
