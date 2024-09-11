@@ -1,9 +1,11 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 require 'simplecov'
+SimpleCov.start 'rails'
 ENV['RAILS_ENV'] ||= 'test'
 SimpleCov.start 'rails'
 require_relative '../config/environment'
+require 'support/factory_bot.rb'
 # Prevent database truncation if the environment is production
 require 'support/factory_bot.rb'
 abort("The Rails environment is running in production mode!") if Rails.env.production?
