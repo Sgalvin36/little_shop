@@ -21,5 +21,21 @@ RSpec.describe Merchant do
                 end
             end
         end
+
+        describe "#create" do
+            it "creates a new merchant" do 
+                merchant_params = {
+                    name: "Joe"
+                }
+                headers = { "CONTENT_TYPE" => "application/json" }
+
+                post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: merchant_params)
+
+                created_merchant = Merchant.last
+                
+                expect(response).to be_successful
+                expect(created_merchant.name).to eq("Joe")
+            end
+        end
     end
 end
