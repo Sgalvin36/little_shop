@@ -20,6 +20,20 @@ RSpec.describe Merchant do
                     expect(nameArray).to include(merchant[:attributes][:name])
                 end
             end
+
+            it "returns a sorted list of all merchants newest to oldest" do
+                merchant1 = Merchant.create(name: "Skippy")
+                merchant2 = Merchant.create(name: "Pippy")
+                merchant3 = Merchant.create(name: "Flippy")
+                
+
+                get "/api/v1/merchants?sort=desc"
+
+                expect(response).to be_successful
+                sortedMerchants = JSON.parse(response.body, symbolize_names: true)
+                expect((sortedMerchants[:data][0][:id]).to_s).to eq(merchant3[:id].to_s)
+                expect((sortedMerchants[:data][2][:id]).to_s).to eq(merchant1[:id].to_s)
+            end
         end
     end
 end
