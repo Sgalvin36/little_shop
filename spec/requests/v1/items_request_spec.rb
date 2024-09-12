@@ -4,8 +4,7 @@ describe "Items API" do
     before(:all) do
         Item.destroy_all
         @merchant = Merchant.create!(name: 'Test Merchant')
-        create_list(:item, 4, merchant_id: @merchant.id)
-        binding.pry
+        create_list(:item, 4, merchant_id: @merchant.id)  
     end
 
     it 'displays a list of all items' do
@@ -30,56 +29,62 @@ describe "Items API" do
         end
     end
 
-    it "creates a new item" do
-        item_params = {name: "pizza",
-        description: "The best handheld food around!",
-        unit_price: 42.00,
-        merchant_id: @merchant.id
-        }
+    describe "#POST" do
+        it "creates a new item" do
+            item_params = {name: "pizza",
+            description: "The best handheld food around!",
+            unit_price: 42.00,
+            merchant_id: @merchant.id
+            }
 
-        headers = { "CONTENT_TYPE" => "application/json" }
+            headers = { "CONTENT_TYPE" => "application/json" }
 
-        post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
-        create_item = Item.last
+            post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
+            create_item = Item.last
 
-        expect(response).to be_successful
+            expect(response).to be_successful
 
-        item = Item.last
-        expect(item.name).to eq("pizza")
-        expect(item.description).to eq("The best handheld food around!")
-        expect(item.unit_price).to eq(42.00)
-        expect(item.merchant_id).to eq(@merchant.id)
+            item = Item.last
+            expect(item.name).to eq("pizza")
+            expect(item.description).to eq("The best handheld food around!")
+            expect(item.unit_price).to eq(42.00)
+            expect(item.merchant_id).to eq(@merchant.id)
+        end
     end
 
-    it "can update an existing Item" do 
-        item_id = Item.create({name: "Pizza",
-        description: "Topped with pineapple!",
-        unit_price: 42.00,
-        merchant_id: @merchant.id}).id
+    describe "#PATCH" do
+        it "can update an existing Item" do 
+            item_id = Item.create({name: "Pizza",
+            description: "Topped with pineapple!",
+            unit_price: 42.00,
+            merchant_id: @merchant.id}).id
 
-        previous_price = Item.last.unit_price
-        item_params = { unit_price: 80.25 }
-        headers = {"CONTENT_TYPE" => "application/json"}
-        
-        patch "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
-        item = Item.find_by(id: item_id)
-        expect(response).to be_successful
-        expect(item.unit_price).to_not eq(previous_price)
-        expect(item.unit_price).to eq(80.25)
+            previous_price = Item.last.unit_price
+            item_params = { unit_price: 80.25 }
+            headers = {"CONTENT_TYPE" => "application/json"}
+            
+            patch "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+            item = Item.find_by(id: item_id)
+            expect(response).to be_successful
+            expect(item.unit_price).to_not eq(previous_price)
+            expect(item.unit_price).to eq(80.25)
+        end
     end
 
-    it "can destroy an item" do
-        item = Item.create(name: "REGRET",
-            description: "Hard work rarely pays off.",
-            unit_price: 69.00,
-            merchant_id: @merchant.id)
+    describe "#DELETE" do
+        it "can destroy an item" do
+            item = Item.create(name: "REGRET",
+                description: "Hard work rarely pays off.",
+                unit_price: 69.00,
+                merchant_id: @merchant.id)
+            
+            expect(Item.count).to eq(5)
         
-        expect(Item.count).to eq(5)
-    
-        delete "/api/v1/items/#{item.id}"
-    
-        expect(response).to be_successful
-        expect(Item.count).to eq(4)
-        expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+            delete "/api/v1/items/#{item.id}"
+        
+            expect(response).to be_successful
+            expect(Item.count).to eq(4)
+            expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
     end
 end
