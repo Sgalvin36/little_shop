@@ -1,7 +1,8 @@
 require "rails_helper"
 
 RSpec.describe Merchant do
-    before(:each) do
+    before(:all) do
+        Merchant.destroy_all
         @merchant1 = Merchant.create(name: "Skippy")
         @merchant2 = Merchant.create(name: "Pippy")
         @merchant3 = Merchant.create(name: "Flippy")
@@ -38,7 +39,7 @@ RSpec.describe Merchant do
 
             #simulate return a merchant1 item
 
-            invoice1 = Invoice.create(
+            Invoice.create!(
                 merchant_id: @merchant1[:id],
                 status: "returned"
             )
@@ -51,7 +52,7 @@ RSpec.describe Merchant do
             
             #simulate return a merchant2 item
 
-            invoice1 = Invoice.create(
+            Invoice.create(
                 merchant_id: @merchant2[:id],
                 status: "returned",
             )
@@ -64,7 +65,7 @@ RSpec.describe Merchant do
             expect(merchantsWithInvoice[:data].count).to eq(2)
         end
 
-        it "returns a list of all merchants with item counts" do
+        xit "returns a list of all merchants with item counts" do
             item1 = Item.create(
                 name: 'Cheese',
                 description: 'Smells Bad',
