@@ -5,4 +5,7 @@ class Merchant < ApplicationRecord
     def self.sorted_by_created_at
         order(created_at: :desc)
     end
+    def self.filter_by_status
+        joins(:invoices).where("status = 'returned'")
+    end
 end

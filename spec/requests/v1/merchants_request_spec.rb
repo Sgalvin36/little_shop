@@ -40,7 +40,7 @@ RSpec.describe Merchant do
 
             invoice1 = Invoice.create(
                 merchant_id: @merchant1[:id],
-                status: "shipped"
+                status: "returned"
             )
             get "/api/v1/merchants?status=returned"
 
@@ -53,7 +53,7 @@ RSpec.describe Merchant do
 
             invoice1 = Invoice.create(
                 merchant_id: @merchant2[:id],
-                status: "shipped",
+                status: "returned",
             )
 
             get "/api/v1/merchants?status=returned"
