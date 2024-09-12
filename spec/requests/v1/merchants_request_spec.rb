@@ -6,7 +6,7 @@ RSpec.describe Merchant do
         @merchant2 = Merchant.create(name: "Pippy")
         @merchant3 = Merchant.create(name: "Flippy")
     end
-    
+
     describe "#index" do
         it "returns all merchant objects" do
 
@@ -17,7 +17,8 @@ RSpec.describe Merchant do
             expect(response).to be_successful
             
             allMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect(allMerchants[:data].count).to eq(3)
+
+            expect(allMerchants[:data].length).to eq(3)
             allMerchants[:data].each do |merchant|
                 expect(merchant).to have_key(:id)
                 expect(nameArray).to include(merchant[:attributes][:name])
