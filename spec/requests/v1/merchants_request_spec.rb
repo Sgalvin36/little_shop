@@ -35,7 +35,12 @@ RSpec.describe Merchant do
 
     describe "show" do
         it "returns a single merchant" do
+            get "/api/v1/merchants/#{@merchant1[:id]}"
 
+            singleMerchant = JSON.parse(response.body, symbolize_names: true)
+
+            expect(response).to be_successful
+            expect(singleMerchant[:data][:attributes][:name]).to eq ("Skippy")
         end
     end
 
