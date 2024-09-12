@@ -6,6 +6,7 @@ RSpec.describe Merchant do
         @merchant2 = Merchant.create(name: "Pippy")
         @merchant3 = Merchant.create(name: "Flippy")
     end
+    
     describe "#index" do
         it "returns all merchant objects" do
 
@@ -16,7 +17,7 @@ RSpec.describe Merchant do
             expect(response).to be_successful
             
             allMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect(allMerchants[:data].length).to eq(3)
+            expect(allMerchants[:data].count).to eq(3)
             allMerchants[:data].each do |merchant|
                 expect(merchant).to have_key(:id)
                 expect(nameArray).to include(merchant[:attributes][:name])
@@ -32,6 +33,27 @@ RSpec.describe Merchant do
             expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchant3[:id].to_s)
             expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchant1[:id].to_s)
         end
+
+        it "returns a list of all merchants with returned items" do
+            
+            #simulate return a merchant1 item
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
+            
+            expect(merchantsWithInvoice[:data].count).to eq(1)
+            
+            #simulate return a merchant2 item
+
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
+            
+            expect(merchantsWithInvoice[:data].count).to eq(2)
+        end
+    end
 
     describe "show" do
         it "returns a single merchant" do
@@ -57,7 +79,6 @@ RSpec.describe Merchant do
             
             expect(response).to be_successful
             expect(created_merchant.name).to eq("Joe")
-        end
         end
     end
 end
