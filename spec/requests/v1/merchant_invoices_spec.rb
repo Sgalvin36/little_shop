@@ -13,7 +13,7 @@ describe "Merchant Invoices API" do
 
     it 'displays a list of all items' do
         get "/api/v1/merchants/#{@merchant.id}/invoices"
-        
+
         expect(response).to be_successful
 
         invoices = JSON.parse(response.body, symbolize_names: true)
@@ -23,9 +23,9 @@ describe "Merchant Invoices API" do
 
             expect(invoice[:attributes][:status]).to be_a(String)
 
-            expect(invoice[:attributes][:customer_id]).to be_a(String)
+            expect(invoice[:attributes][:customer_id]).to be_a(Integer)
 
-            expect(item[:attributes][:merchant_id]).to be_a(@merchant.id)
+            expect(invoice[:attributes][:merchant_id]).to eq(@merchant.id)
         end
     end
 end
