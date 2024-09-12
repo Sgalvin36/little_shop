@@ -96,15 +96,15 @@ RSpec.describe Merchant do
         it 'can delete a merchant' do
             expect(Merchant.count).to eq(3)
 
-            delete "/api/v1/merchants/#{merchant1_id}"
+            delete "/api/v1/merchants/#{@merchant1.id}"
 
             expect(response).to be_successful
             expect(Merchant.count).to eq(2)
 
-            removed_merchant = Merchant.find_by(id: merchant1.id)
+            removed_merchant = Merchant.find_by(id: @merchant1.id)
             expect(removed_merchant).to be_nil
 
-            expect(Merchant.find(merchant2.id)).to eq(merchant2)
+            expect(Merchant.find(@merchant2.id)).to eq(@merchant2)
         end
     end
 end

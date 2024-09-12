@@ -22,6 +22,9 @@ class Api::V1::MerchantsController < ApplicationController
         render json: Merchant.create(merchant_params)
     end
 
+    def delete
+        render json: Merchant.delete(params[:id])
+    end
     private
 
     def merchant_params
