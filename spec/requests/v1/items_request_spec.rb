@@ -4,30 +4,8 @@ describe "Items API" do
     before(:all) do
         Item.destroy_all
         @merchant = Merchant.create!(name: 'Test Merchant')
-        @item1 = Item.create(
-            name: 'Cheese',
-            description: 'Smells Bad',
-            unit_price: 100.00,
-            merchant: @merchant
-        )
-        @item2 = Item.create(
-            name: 'Bread',
-            description: 'Freshly Baked',
-            unit_price: 50.00,
-            merchant: @merchant
-        )
-        @item3 = Item.create(
-            name: 'Milk',
-            description: 'Dairy Product',
-            unit_price: 75.00,
-            merchant: @merchant
-        )
-        @item4 = Item.create(
-            name: 'Butter',
-            description: 'Creamy and Rich',
-            unit_price: 120.00,
-            merchant: @merchant
-        )
+        create_list(:item, 4, merchant_id: @merchant.id)
+        binding.pry
     end
 
     it 'displays a list of all items' do
