@@ -63,6 +63,34 @@ RSpec.describe Merchant do
             
             expect(merchantsWithInvoice[:data].count).to eq(2)
         end
+
+        it "returns a list of all merchants with item counts" do
+            item1 = Item.create(
+                name: 'Cheese',
+                description: 'Smells Bad',
+                unit_price: 100.00,
+                merchant: @merchant1
+            )
+            item2 = Item.create(
+                name: 'Bread',
+                description: 'Freshly Baked',
+                unit_price: 50.00,
+                merchant: @merchant1
+            )
+            item3 = Item.create(
+                name: 'Milk',
+                description: 'Dairy Product',
+                unit_price: 75.00,
+                merchant: @merchant1
+            )
+
+            get "/api/v1/merchants?count=true"
+
+            expect(response).to be_successful
+            
+            allMerchants = JSON.parse(response.body, symbolize_names: true)
+            expect(allMerchants[:data][0][:attributes][:item_count]).to eq(3)
+        end
     end
 
     describe "show" do
