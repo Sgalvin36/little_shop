@@ -5,6 +5,8 @@ class Api::V1::MerchantsController < ApplicationController
 
         if params[:sort]
             merchants = merchants.sorted_by_created_at
+        elsif params[:status]
+            merchants = merchants.filter_by_status
         end
 
         render json: MerchantSerializer.new(merchants)
@@ -20,6 +22,9 @@ class Api::V1::MerchantsController < ApplicationController
         render json: Merchant.create(merchant_params)
     end
 
+    def delete
+        render json: Merchant.delete(params[:id])
+    end
     private
 
     def merchant_params
