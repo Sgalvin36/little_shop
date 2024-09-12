@@ -1,8 +1,15 @@
 class Api::V1::ItemsController < ApplicationController
     def index
-      @items = Item.all
+      @items = if params[:sort] == 'unit_price'
+                Item.sorted_by_price
+              else
+                Item.all
+              end
+
       render json: ItemSerializer.new(@items).serializable_hash.to_json
     end
+
+    
 
     def create
         render json: Item.create(item_params)
