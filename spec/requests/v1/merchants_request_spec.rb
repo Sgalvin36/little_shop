@@ -35,8 +35,13 @@ RSpec.describe Merchant do
         end
 
         it "returns a list of all merchants with returned items" do
-            
+
             #simulate return a merchant1 item
+
+            invoice1 = Invoice.create(
+                merchant_id: @merchant1[:id],
+                status: "shipped"
+            )
             get "/api/v1/merchants?status=returned"
 
             expect(response).to be_successful
@@ -45,6 +50,11 @@ RSpec.describe Merchant do
             expect(merchantsWithInvoice[:data].count).to eq(1)
             
             #simulate return a merchant2 item
+
+            invoice1 = Invoice.create(
+                merchant_id: @merchant2[:id],
+                status: "shipped",
+            )
 
             get "/api/v1/merchants?status=returned"
 
