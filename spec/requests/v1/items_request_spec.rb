@@ -66,12 +66,41 @@ describe "Items API" do
             expect(item[:id]).to be_an(String)
             expect(item[:attributes][:description]).to be_a(String)
         end
-
-
-
-
     end
 
+    it "displays one item" do
+        get "/api/v1/items/#{@item1.id}"
+
+        expect(response).to be_successful
+
+        items= JSON.parse(response.body, symbolize_names: true)
+
+        
+            expect(@item1.name).to be_a(String)
+            expect(@item1.name).to eq('Cheese')
+
+            expect(@item1.description).to be_a(String)
+            expect(@item1.description).to eq('Smells Bad')
+
+            expect(@item1.unit_price).to be_a(Float)
+            expect(@item1.unit_price).to eq(100.00)
+
+        get "/api/v1/items/#{@item2.id}"
+
+        expect(response).to be_successful
+
+        items= JSON.parse(response.body, symbolize_names: true)
+
+        
+            expect(@item2.name).to be_a(String)
+            expect(@item2.name).to eq('Bread')
+
+            expect(@item2.description).to be_a(String)
+            expect(@item2.description).to eq('Freshly Baked')
+
+            expect(@item2.unit_price).to be_a(Float)
+            expect(@item2.unit_price).to eq(50.00)
+    end
 
     it "creates a new item" do
         new_id = Merchant.create(name: "Joe").id
