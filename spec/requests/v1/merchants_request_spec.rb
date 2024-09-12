@@ -51,5 +51,31 @@ RSpec.describe Merchant do
                 expect(created_merchant.name).to eq("Joe")
             end
         end
+
+        describe "#patch" do
+            it "can edit a resource" do
+              merchant1 = Merchant.create(name: "Sammy")
+              merchant2 = Merchant.create(name: "James")
+                binding.pry
+                unpdated_merchant_params = {
+                    name: "Saul"
+                }
+
+                headers = { "CONTENT_TYPE" => "application/json"}
+
+              patch "/api/v1/mercahnts/#{merchant1.id}", heders: headers, params: JSON.generate(merchant: merchant_params)
+              
+              expect(response).to be_successful
+
+              new_merchant = JSON.parse(response.body, symbolize_names: true)
+
+              expect(new_merchant[:data][:type]).to eq ("merchant")
+              expect(new_merchant[:data][:attributes][:name]). to eq("Saul")
+
+              updated_merchant = Merchant.find(merchant1.id)
+              expect(updated_mercahnt.name).to eq("Saul")
+              expect(merchant2[:data][:attributes][:name]).to eq("James")
+            end
+        end
     end
 end
