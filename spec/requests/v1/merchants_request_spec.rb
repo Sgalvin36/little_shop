@@ -6,7 +6,7 @@ RSpec.describe Merchant do
         @merchant2 = Merchant.create(name: "Pippy")
         @merchant3 = Merchant.create(name: "Flippy")
     end
-    
+
     describe "#index" do
         it "returns all merchant objects" do
 
@@ -17,7 +17,8 @@ RSpec.describe Merchant do
             expect(response).to be_successful
             
             allMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect(allMerchants[:data].count).to eq(3)
+
+            expect(allMerchants[:data].length).to eq(3)
             allMerchants[:data].each do |merchant|
                 expect(merchant).to have_key(:id)
                 expect(nameArray).to include(merchant[:attributes][:name])
@@ -112,6 +113,22 @@ RSpec.describe Merchant do
               expect(updated_merchant.name).to eq("Saul")
               expect(merchant2.name).to eq("James")
             end
+        end
+    end
+    
+    describe "#delete" do
+        it 'can delete a merchant' do
+            expect(Merchant.count).to eq(3)
+
+            delete "/api/v1/merchants/#{@merchant1.id}"
+
+            expect(response).to be_successful
+            expect(Merchant.count).to eq(2)
+
+            removed_merchant = Merchant.find_by(id: @merchant1.id)
+            expect(removed_merchant).to be_nil
+
+            expect(Merchant.find(@merchant2.id)).to eq(@merchant2)
         end
     end
 end
