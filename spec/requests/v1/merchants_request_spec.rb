@@ -9,8 +9,7 @@ RSpec.describe Merchant do
 
     describe "#index" do
         it "returns all merchant objects" do
-
-            nameArray = ["Skippy", "Pippy", "Flippy"]
+            merchant_names = ["Skippy", "Pippy", "Flippy"]
 
             get "/api/v1/merchants"
 
@@ -21,7 +20,7 @@ RSpec.describe Merchant do
             expect(allMerchants[:data].length).to eq(3)
             allMerchants[:data].each do |merchant|
                 expect(merchant).to have_key(:id)
-                expect(nameArray).to include(merchant[:attributes][:name])
+                expect(merchant_names).to include(merchant[:attributes][:name])
             end
         end
 
@@ -39,7 +38,7 @@ RSpec.describe Merchant do
 
             #simulate return a merchant1 item
 
-            invoice1 = Invoice.create(
+            Invoice.create!(
                 merchant_id: @merchant1[:id],
                 status: "returned"
             )
@@ -52,7 +51,7 @@ RSpec.describe Merchant do
             
             #simulate return a merchant2 item
 
-            invoice1 = Invoice.create(
+            Invoice.create(
                 merchant_id: @merchant2[:id],
                 status: "returned",
             )
@@ -63,6 +62,34 @@ RSpec.describe Merchant do
             merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
             
             expect(merchantsWithInvoice[:data].count).to eq(2)
+        end
+
+        it "returns a list of all merchants with item counts" do
+            item1 = Item.create(
+                name: 'Cheese',
+                description: 'Smells Bad',
+                unit_price: 100.00,
+                merchant: @merchant1
+            )
+            item2 = Item.create(
+                name: 'Bread',
+                description: 'Freshly Baked',
+                unit_price: 50.00,
+                merchant: @merchant1
+            )
+            item3 = Item.create(
+                name: 'Milk',
+                description: 'Dairy Product',
+                unit_price: 75.00,
+                merchant: @merchant1
+            )
+
+            get "/api/v1/merchants?count=true"
+
+            expect(response).to be_successful
+            
+            allMerchants = JSON.parse(response.body, symbolize_names: true)
+            expect(allMerchants[:data][0][:attributes][:item_count]).to eq(3)
         end
     end
 
