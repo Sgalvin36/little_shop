@@ -118,10 +118,28 @@ describe "Items API" do
 
     describe "#DELETE" do
         it "can destroy an item" do
-            item = Item.create(name: "REGRET",
-                description: "Hard work rarely pays off.",
-                unit_price: 69.00,
-                merchant_id: @merchant.id)
+            item = create(:item, merchant_id: @merchant.id)
+
+            expect(Item.count).to eq(5)
+        
+            delete "/api/v1/items/#{item.id}"
+        
+            expect(response).to be_successful
+            expect(Item.count).to eq(4)
+            expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+
+        it "can destroy item invoices associated with the item" do
+            item = create(:item, merchant_id: @merchant.id)
+            customer1 = create(:customer)
+            customer2 = create(:customer)
+            
+            invoice1 = create(:invoice, merchant_id: @merchant.id, status:"shipped", customer_id:customer1.id)
+            invoice2 = create(:invoice, merchant_id: @merchant.id, status:"shipped", customer_id:customer2.id)
+            
+            create(:invoice_item, item_id: item.id, invoice_id: invoice1)
+            create(:invoice_item, item_id: item.id, invoice_id: invoice1)
+            
             
             expect(Item.count).to eq(5)
         
