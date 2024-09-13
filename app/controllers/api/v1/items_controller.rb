@@ -9,7 +9,10 @@ class Api::V1::ItemsController < ApplicationController
       render json: ItemSerializer.new(@items).serializable_hash.to_json
     end
 
-    
+    def show
+      item = Item.find(params[:id])
+      render json: ItemSerializer.new(item)
+    end
 
     def create
         render json: Item.create(item_params)
