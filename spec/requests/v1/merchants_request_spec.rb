@@ -2,9 +2,7 @@ require "rails_helper"
 
 RSpec.describe Merchant do
     before(:each) do
-        @merchant1 = Merchant.create(name: "Skippy")
-        @merchant2 = Merchant.create(name: "Pippy")
-        @merchant3 = Merchant.create(name: "Flippy")
+        @merchants = create_list(:merchant)
     end
 
     describe "#index" do
