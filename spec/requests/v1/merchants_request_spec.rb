@@ -1,8 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Merchant do
-    before(:all) do
-        Merchant.destroy_all
+    before(:each) do
         @merchant1 = Merchant.create(name: "Skippy")
         @merchant2 = Merchant.create(name: "Pippy")
         @merchant3 = Merchant.create(name: "Flippy")
@@ -10,8 +9,7 @@ RSpec.describe Merchant do
     
     describe "#index" do
         it "returns all merchant objects" do
-
-            nameArray = ["Skippy", "Pippy", "Flippy"]
+            merchant_names = ["Skippy", "Pippy", "Flippy"]
 
             get "/api/v1/merchants"
 
@@ -21,7 +19,7 @@ RSpec.describe Merchant do
             expect(allMerchants[:data].count).to eq(3)
             allMerchants[:data].each do |merchant|
                 expect(merchant).to have_key(:id)
-                expect(nameArray).to include(merchant[:attributes][:name])
+                expect(merchant_names).to include(merchant[:attributes][:name])
             end
         end
 
@@ -65,7 +63,7 @@ RSpec.describe Merchant do
             expect(merchantsWithInvoice[:data].count).to eq(2)
         end
 
-        xit "returns a list of all merchants with item counts" do
+        it "returns a list of all merchants with item counts" do
             item1 = Item.create(
                 name: 'Cheese',
                 description: 'Smells Bad',
