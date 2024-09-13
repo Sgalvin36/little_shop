@@ -38,19 +38,40 @@ describe "Items API" do
 
         items = JSON.parse(response.body, symbolize_names: true)
 
-        items[:data].each do |item|
-            expect(item[:id].to_i).to be_an(Integer)
+        
 
-            expect(item[:attributes]).to have_key(:name)
+        items[:data].each do |item|
+            expect(item[:id]).to be_an(String)
+            # check for type
+
             expect(item[:attributes][:name]).to be_a(String)
 
-            expect(item[:attributes]).to have_key(:description)
             expect(item[:attributes][:description]).to be_a(String)
 
-            expect(item[:attributes]).to have_key(:unit_price)
             expect(item[:attributes][:unit_price]).to be_a(Float)
         end
     end
+
+    it 'displays all items sorted by price' do
+        get '/api/v1/items?sort=unit_price'
+
+        expect(response).to be_successful
+
+        items = JSON.parse(response.body, symbolize_names: true)
+
+        prices = items[:data].map { |item| item[:attributes][:unit_price] }
+        expect(prices).to eq(prices.sort)
+
+        items[:data].each do |item|
+            expect(item[:id]).to be_an(String)
+            expect(item[:attributes][:description]).to be_a(String)
+        end
+
+
+
+
+    end
+
 
     it "creates a new item" do
         item_params = {name: "pizza",
