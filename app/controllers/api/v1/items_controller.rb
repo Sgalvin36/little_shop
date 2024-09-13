@@ -24,7 +24,7 @@ class Api::V1::ItemsController < ApplicationController
     end
 
     def destroy
-        render json: Item.delete(params[:id]), status: 204
+        render json: Item.destroy(params[:id]), status: 204
     end
 
     private
