@@ -15,19 +15,20 @@ describe "Items API" do
 
         items = JSON.parse(response.body, symbolize_names: true)
 
-        items[:data].each do |item|
-            expect(item[:id].to_i).to be_an(Integer)
+        
 
-            expect(item[:attributes]).to have_key(:name)
+        items[:data].each do |item|
+            expect(item[:id]).to be_an(String)
+            # check for type
+
             expect(item[:attributes][:name]).to be_a(String)
 
-            expect(item[:attributes]).to have_key(:description)
             expect(item[:attributes][:description]).to be_a(String)
 
-            expect(item[:attributes]).to have_key(:unit_price)
             expect(item[:attributes][:unit_price]).to be_a(Float)
         end
     end
+
 
     describe "#POST" do
         it "creates a new item" do
@@ -36,6 +37,63 @@ describe "Items API" do
             unit_price: 42.00,
             merchant_id: @merchant.id
             }
+
+    it 'displays all items sorted by price' do
+        get '/api/v1/items?sort=unit_price'
+
+        expect(response).to be_successful
+
+        items = JSON.parse(response.body, symbolize_names: true)
+
+        prices = items[:data].map { |item| item[:attributes][:unit_price] }
+        expect(prices).to eq(prices.sort)
+
+        items[:data].each do |item|
+            expect(item[:id]).to be_an(String)
+            expect(item[:attributes][:description]).to be_a(String)
+        end
+    end
+
+    it "displays one item" do
+        get "/api/v1/items/#{@item1.id}"
+
+        expect(response).to be_successful
+
+        items= JSON.parse(response.body, symbolize_names: true)
+
+        
+            expect(@item1.name).to be_a(String)
+            expect(@item1.name).to eq('Cheese')
+
+            expect(@item1.description).to be_a(String)
+            expect(@item1.description).to eq('Smells Bad')
+
+            expect(@item1.unit_price).to be_a(Float)
+            expect(@item1.unit_price).to eq(100.00)
+
+        get "/api/v1/items/#{@item2.id}"
+
+        expect(response).to be_successful
+
+        items= JSON.parse(response.body, symbolize_names: true)
+
+        
+            expect(@item2.name).to be_a(String)
+            expect(@item2.name).to eq('Bread')
+
+            expect(@item2.description).to be_a(String)
+            expect(@item2.description).to eq('Freshly Baked')
+
+            expect(@item2.unit_price).to be_a(Float)
+            expect(@item2.unit_price).to eq(50.00)
+    end
+
+    it "creates a new item" do
+        item_params = {name: "pizza",
+        description: "The best handheld food around!",
+        unit_price: 42.00,
+        merchant_id: @merchant.id
+        }
 
             headers = { "CONTENT_TYPE" => "application/json" }
 

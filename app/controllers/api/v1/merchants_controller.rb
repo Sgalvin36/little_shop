@@ -5,11 +5,15 @@ class Api::V1::MerchantsController < ApplicationController
 
         if params[:sort]
             merchants = merchants.sorted_by_created_at
+            render json: MerchantSerializer.new(merchants)
         elsif params[:status]
             merchants = merchants.filter_by_status
+            render json: MerchantSerializer.new(merchants)
+        elsif params[:count]
+            render json: MerchantItemSerializer.serialize(merchants)
+        else
+            render json: MerchantSerializer.new(merchants)
         end
-
-        render json: MerchantSerializer.new(merchants)
     end
 
     def show
