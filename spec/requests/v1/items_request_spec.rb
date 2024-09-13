@@ -4,109 +4,95 @@ describe "Items API" do
     before(:all) do
         Item.destroy_all
         @merchant = Merchant.create!(name: 'Test Merchant')
-        create_list(:item, 4, merchant_id: @merchant.id)  
+        @items = create_list(:item, 4, merchant_id: @merchant.id)  
     end
 
-    it 'displays a list of all items' do
-        get '/api/v1/items'
+    describe "#GET" do
+        it 'displays a list of all items' do
+            get '/api/v1/items'
 
-        expect(response).to be_successful
+            expect(response).to be_successful
 
 
-        items = JSON.parse(response.body, symbolize_names: true)
+            items = JSON.parse(response.body, symbolize_names: true)
 
-        
+            
 
-        items[:data].each do |item|
-            expect(item[:id]).to be_an(String)
-            # check for type
+            items[:data].each do |item|
+                expect(item[:id]).to be_an(String)
+                expect(item[:type]).to eq("item")
 
-            expect(item[:attributes][:name]).to be_a(String)
+                expect(item[:attributes][:name]).to be_a(String)
+                expect(item[:attributes][:description]).to be_a(String)
+                expect(item[:attributes][:unit_price]).to be_a(Float)
+            end
+        end   
 
-            expect(item[:attributes][:description]).to be_a(String)
+        it 'displays all items sorted by price' do
+            get '/api/v1/items?sort=unit_price'
 
-            expect(item[:attributes][:unit_price]).to be_a(Float)
+            expect(response).to be_successful
+
+            items = JSON.parse(response.body, symbolize_names: true)
+
+            prices = items[:data].map { |item| item[:attributes][:unit_price] }
+            expect(prices).to eq(prices.sort)
+
+            items[:data].each do |item|
+                expect(item[:id]).to be_an(String)
+                expect(item[:attributes][:description]).to be_a(String)
+            end
+        end
+
+        it "displays one item" do
+            items = create_list(:item, 2, merchant_id: @merchant.id)
+            get "/api/v1/items/#{items[0].id}"
+
+            expect(response).to be_successful
+
+            item1 = JSON.parse(response.body, symbolize_names: true)
+            item1 = item1[:data]
+
+            expect(item1[:id].to_i).to eq(items[0].id)
+            expect(item1[:type]).to eq("item")
+            expect(item1[:attributes][:name]).to eq(items[0].name)
+            expect(item1[:attributes][:description]).to eq(items[0].description)
+            expect(item1[:attributes][:unit_price]).to eq(items[0].unit_price)
+
+            get "/api/v1/items/#{items[1].id}"
+
+            expect(response).to be_successful
+
+            item2 = JSON.parse(response.body, symbolize_names: true)
+            item2 = item2[:data]
+
+            expect(item2[:id].to_i).to eq(items[1].id)
+            expect(item2[:type]).to eq("item")
+            expect(item2[:attributes][:name]).to eq(items[1].name)
+            expect(item2[:attributes][:description]).to eq(items[1].description)
+            expect(item2[:attributes][:unit_price]).to eq(items[1].unit_price)
         end
     end
-
 
     describe "#POST" do
         it "creates a new item" do
             item_params = {name: "pizza",
-            description: "The best handheld food around!",
-            unit_price: 42.00,
-            merchant_id: @merchant.id
-            }
-
-    it 'displays all items sorted by price' do
-        get '/api/v1/items?sort=unit_price'
-
-        expect(response).to be_successful
-
-        items = JSON.parse(response.body, symbolize_names: true)
-
-        prices = items[:data].map { |item| item[:attributes][:unit_price] }
-        expect(prices).to eq(prices.sort)
-
-        items[:data].each do |item|
-            expect(item[:id]).to be_an(String)
-            expect(item[:attributes][:description]).to be_a(String)
-        end
-    end
-
-    it "displays one item" do
-        get "/api/v1/items/#{@item1.id}"
-
-        expect(response).to be_successful
-
-        items= JSON.parse(response.body, symbolize_names: true)
-
-        
-            expect(@item1.name).to be_a(String)
-            expect(@item1.name).to eq('Cheese')
-
-            expect(@item1.description).to be_a(String)
-            expect(@item1.description).to eq('Smells Bad')
-
-            expect(@item1.unit_price).to be_a(Float)
-            expect(@item1.unit_price).to eq(100.00)
-
-        get "/api/v1/items/#{@item2.id}"
-
-        expect(response).to be_successful
-
-        items= JSON.parse(response.body, symbolize_names: true)
-
-        
-            expect(@item2.name).to be_a(String)
-            expect(@item2.name).to eq('Bread')
-
-            expect(@item2.description).to be_a(String)
-            expect(@item2.description).to eq('Freshly Baked')
-
-            expect(@item2.unit_price).to be_a(Float)
-            expect(@item2.unit_price).to eq(50.00)
-    end
-
-    it "creates a new item" do
-        item_params = {name: "pizza",
-        description: "The best handheld food around!",
-        unit_price: 42.00,
-        merchant_id: @merchant.id
-        }
+                description: "The best handheld food around!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id
+                }
 
             headers = { "CONTENT_TYPE" => "application/json" }
 
             post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
-            create_item = Item.last
 
             expect(response).to be_successful
 
             item = Item.last
-            expect(item.name).to eq("pizza")
-            expect(item.description).to eq("The best handheld food around!")
-            expect(item.unit_price).to eq(42.00)
-            expect(item.merchant_id).to eq(@merchant.id)
+            expect(item.name).to eq(item_params[:name])
+            expect(item.description).to eq(item_params[:description])
+            expect(item.unit_price).to eq(item_params[:unit_price])
+            expect(item.merchant_id).to eq(item_params[:merchant_id])
         end
     end
 
@@ -123,6 +109,7 @@ describe "Items API" do
             
             patch "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
             item = Item.find_by(id: item_id)
+
             expect(response).to be_successful
             expect(item.unit_price).to_not eq(previous_price)
             expect(item.unit_price).to eq(80.25)
