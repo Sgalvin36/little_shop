@@ -116,14 +116,18 @@ RSpec.describe Merchant do
         end
     end
     
-    describe "#delete" do
-        it 'can delete a merchant' do
+    describe "#destroy" do
+        it 'can destroy a merchant and item' do
+            item = Item.create(name: "Toy", merchant: @merchant1)
+
             expect(Merchant.count).to eq(3)
+            expect(Item.count).to eq(1)
 
             delete "/api/v1/merchants/#{@merchant1.id}"
 
-            expect(response).to be_successful
+            expect(response.status).to eq(204)
             expect(Merchant.count).to eq(2)
+            expect(Item.count).to eq(0)
 
             removed_merchant = Merchant.find_by(id: @merchant1.id)
             expect(removed_merchant).to be_nil

@@ -28,8 +28,10 @@ class Api::V1::MerchantsController < ApplicationController
         render json: MerchantSerializer.new(update_merchant).serializable_hash.to_json
       end
 
-    def delete
-        render json: Merchant.delete(params[:id])
+    def destroy
+       merchant = Merchant.find(params[:id])
+       merchant.destroy
+       head :no_content
     end
 
 private
