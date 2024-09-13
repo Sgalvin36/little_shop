@@ -3,6 +3,7 @@ require "rails_helper"
 describe "Merchant Invoices API" do
     before(:all) do
         Invoice.destroy_all
+        
         @merchant = Merchant.create!(name: 'Test Merchant')
         @customer1 = create(:customer)
         @customer2 = create(:customer)

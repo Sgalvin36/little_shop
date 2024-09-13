@@ -2,12 +2,14 @@ require "rails_helper"
 
 RSpec.describe Merchant do
     before(:each) do
-        @merchants = create_list(:merchant)
+        Merchant.destroy_all
+
+        @merchants = create_list(:merchant, 3)
     end
 
     describe "#index" do
         it "returns all merchant objects" do
-            merchant_names = ["Skippy", "Pippy", "Flippy"]
+            merchant_names = [@merchants[0][:name], @merchants[1][:name], @merchants[2][:name]]
 
             get "/api/v1/merchants"
 
@@ -28,38 +30,41 @@ RSpec.describe Merchant do
 
             expect(response).to be_successful
             sortedMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchant3[:id].to_s)
-            expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchant1[:id].to_s)
+            expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchants[2][:id].to_s)
+            expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchants[0][:id].to_s)
         end
 
         it "returns a list of all merchants with returned items" do
-
-            #simulate return a merchant1 item
-
-            Invoice.create!(
-                merchant_id: @merchant1[:id],
-                status: "returned"
-            )
-            get "/api/v1/merchants?status=returned"
-
-            expect(response).to be_successful
-            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
-            
-            expect(merchantsWithInvoice[:data].count).to eq(1)
-            
-            #simulate return a merchant2 item
-
-            Invoice.create(
-                merchant_id: @merchant2[:id],
-                status: "returned",
-            )
+            customer = create(:customer)
+            create(:invoice, merchant_id: @merchants[0].id, status: "returned", customer_id: customer.id)
 
             get "/api/v1/merchants?status=returned"
 
             expect(response).to be_successful
-            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
             
-            expect(merchantsWithInvoice[:data].count).to eq(2)
+            expect(merchants_with_invoice[:data].count).to eq(1)
+            expect(merchants_with_invoice[:data][0][:attributes][:name]).to eq(@merchants[0].name)
+
+            create(:invoice, merchant_id: @merchants[2].id, status: "returned", customer_id: customer.id)
+
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+            
+            expect(merchants_with_invoice[:data].count).to eq(2)
+           
+            expect(merchants_with_invoice[:data][1][:attributes][:name]).to eq(@merchants[2].name)
+
+            create(:invoice, merchant_id: @merchants[1].id, status: "shipped", customer_id: customer.id)
+
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+
+            expect(merchants_with_invoice[:data].count).to eq(2)
         end
 
         it "returns a list of all merchants with item counts" do
