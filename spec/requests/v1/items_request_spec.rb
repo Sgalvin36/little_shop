@@ -152,4 +152,8 @@ describe "Items API" do
             expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
         end
     end
+
+    
+    
 end
+

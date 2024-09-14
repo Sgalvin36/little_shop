@@ -133,6 +133,16 @@ RSpec.describe Merchant do
             expect(updated_merchant.name).to_not eq(old_merchant.name)
             expect(updated_merchant.name).to eq("Saul")
         end
+        it "returns merchant data for a given item ID" do
+        
+            get "/api/v1/merchants/#{@merchant.id}/items"
+        
+            expect(response).to be_successful 
+    
+            merchant_items = JSON.parse(response.body, symbolize_names: true)
+        
+            expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
+        end
     end
     
     describe "#delete" do
