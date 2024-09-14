@@ -2,14 +2,14 @@ require "rails_helper"
 
 RSpec.describe Merchant do
     before(:each) do
-        @merchant1 = Merchant.create(name: "Skippy")
-        @merchant2 = Merchant.create(name: "Pippy")
-        @merchant3 = Merchant.create(name: "Flippy")
+        Merchant.destroy_all
+
+        @merchants = create_list(:merchant, 3)
     end
 
     describe "#index" do
         it "returns all merchant objects" do
-            merchant_names = ["Skippy", "Pippy", "Flippy"]
+            merchant_names = [@merchants[0][:name], @merchants[1][:name], @merchants[2][:name]]
 
             get "/api/v1/merchants"
 
@@ -30,77 +30,68 @@ RSpec.describe Merchant do
 
             expect(response).to be_successful
             sortedMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchant3[:id].to_s)
-            expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchant1[:id].to_s)
+            expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchants[2][:id].to_s)
+            expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchants[0][:id].to_s)
         end
 
         it "returns a list of all merchants with returned items" do
-
-            #simulate return a merchant1 item
-
-            Invoice.create!(
-                merchant_id: @merchant1[:id],
-                status: "returned"
-            )
-            get "/api/v1/merchants?status=returned"
-
-            expect(response).to be_successful
-            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
-            
-            expect(merchantsWithInvoice[:data].count).to eq(1)
-            
-            #simulate return a merchant2 item
-
-            Invoice.create(
-                merchant_id: @merchant2[:id],
-                status: "returned",
-            )
+            customer = create(:customer)
+            create(:invoice, merchant_id: @merchants[0].id, status: "returned", customer_id: customer.id)
 
             get "/api/v1/merchants?status=returned"
 
             expect(response).to be_successful
-            merchantsWithInvoice = JSON.parse(response.body, symbolize_names: true)
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
             
-            expect(merchantsWithInvoice[:data].count).to eq(2)
+            expect(merchants_with_invoice[:data].count).to eq(1)
+            expect(merchants_with_invoice[:data][0][:attributes][:name]).to eq(@merchants[0].name)
+
+            create(:invoice, merchant_id: @merchants[2].id, status: "returned", customer_id: customer.id)
+
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+            
+            expect(merchants_with_invoice[:data].count).to eq(2)
+           
+            expect(merchants_with_invoice[:data][1][:attributes][:name]).to eq(@merchants[2].name)
+
+            create(:invoice, merchant_id: @merchants[1].id, status: "shipped", customer_id: customer.id)
+
+            get "/api/v1/merchants?status=returned"
+
+            expect(response).to be_successful
+            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+
+            expect(merchants_with_invoice[:data].count).to eq(2)
         end
 
         it "returns a list of all merchants with item counts" do
-            item1 = Item.create(
-                name: 'Cheese',
-                description: 'Smells Bad',
-                unit_price: 100.00,
-                merchant: @merchant1
-            )
-            item2 = Item.create(
-                name: 'Bread',
-                description: 'Freshly Baked',
-                unit_price: 50.00,
-                merchant: @merchant1
-            )
-            item3 = Item.create(
-                name: 'Milk',
-                description: 'Dairy Product',
-                unit_price: 75.00,
-                merchant: @merchant1
-            )
+            items = create_list(:item, 3, merchant_id: @merchants[0].id)
+            items2 = create_list(:item, 4, merchant_id: @merchants[1].id)
+            items3 = create_list(:item, 6, merchant_id: @merchants[2].id)
 
             get "/api/v1/merchants?count=true"
 
             expect(response).to be_successful
             
             allMerchants = JSON.parse(response.body, symbolize_names: true)
+
             expect(allMerchants[:data][0][:attributes][:item_count]).to eq(3)
+            expect(allMerchants[:data][1][:attributes][:item_count]).to eq(4)
+            expect(allMerchants[:data][2][:attributes][:item_count]).to eq(6)
         end
     end
 
-    describe "show" do
+    describe "#show" do
         it "returns a single merchant" do
-            get "/api/v1/merchants/#{@merchant1[:id]}"
+            get "/api/v1/merchants/#{@merchants[0].id}"
 
             singleMerchant = JSON.parse(response.body, symbolize_names: true)
 
             expect(response).to be_successful
-            expect(singleMerchant[:data][:attributes][:name]).to eq ("Skippy")
+            expect(singleMerchant[:data][:attributes][:name]).to eq (@merchants[0].name)
         end
     end
 
@@ -111,51 +102,51 @@ RSpec.describe Merchant do
             }
             headers = { "CONTENT_TYPE" => "application/json" }
 
+            expect(Merchant.all.count).to eq(3)
+
             post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: merchant_params)
 
             created_merchant = Merchant.last
             
             expect(response).to be_successful
             expect(created_merchant.name).to eq("Joe")
+            expect(Merchant.all.count).to eq(4)
         end
+    end
 
-        describe "#patch" do
-            it "can edit a resource" do
-              merchant1 = Merchant.create(name: "Sammy")
-              merchant2 = Merchant.create(name: "James")
-               
-                updated_merchant_params = {name: "Saul" }
-                headers = { "CONTENT_TYPE" => "application/json"}
+    describe "#patch" do
+        it "can edit a resource" do
+            old_merchant = @merchants[1]
+            updated_merchant_params = {name: "Saul" }
+            headers = { "CONTENT_TYPE" => "application/json"}
 
-              patch "/api/v1/merchants/#{merchant1.id}", headers: headers, params: JSON.generate(merchant: updated_merchant_params)
-              
-              expect(response).to be_successful
+            patch "/api/v1/merchants/#{@merchants[1].id}", headers: headers, params: JSON.generate(merchant: updated_merchant_params)
+            
+            expect(response).to be_successful
 
-              new_merchant = JSON.parse(response.body, symbolize_names: true)
+            new_merchant = JSON.parse(response.body, symbolize_names: true)
 
-              expect(new_merchant[:data][:type]).to eq ("merchant")
-              expect(new_merchant[:data][:attributes][:name]). to eq("Saul")
+            expect(new_merchant[:data][:type]).to eq ("merchant")
+            expect(new_merchant[:data][:attributes][:name]). to eq("Saul")
 
-              updated_merchant = Merchant.find(merchant1.id)
-              expect(updated_merchant.name).to eq("Saul")
-              expect(merchant2.name).to eq("James")
-            end
+            updated_merchant = Merchant.find(@merchants[1].id)
+            expect(updated_merchant.name).to_not eq(old_merchant.name)
+            expect(updated_merchant.name).to eq("Saul")
         end
     end
     
     describe "#delete" do
         it 'can delete a merchant' do
             expect(Merchant.count).to eq(3)
-
-            delete "/api/v1/merchants/#{@merchant1.id}"
+            old_id = @merchants[1].id
+            delete "/api/v1/merchants/#{old_id}"
 
             expect(response).to be_successful
             expect(Merchant.count).to eq(2)
 
-            removed_merchant = Merchant.find_by(id: @merchant1.id)
+            removed_merchant = Merchant.find_by(id: old_id)
             expect(removed_merchant).to be_nil
-
-            expect(Merchant.find(@merchant2.id)).to eq(@merchant2)
+            expect{Merchant.find(old_id) }.to raise_error(ActiveRecord::RecordNotFound)
         end
     end
 end
