@@ -53,7 +53,7 @@ RSpec.describe Merchant do
                 expect(created_merchant.name).to eq("Joe")
             end
         end
-        it "returns merchant data for a given item ID" do
+        it "returns items for given merchant ID" do
         
             get "/api/v1/merchants/#{@merchant.id}/items"
         
