@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   patch "/api/v1/merchants/:id", to: "api/v1/merchants#update"
   delete "/api/v1/merchants/:id", to: "api/v1/merchants#delete"
 
-  get "/api/v1/merchants/customers", to: "api/v1/merchant_customers#index"
+  get "/api/v1/merchants/:merchant_id/customers", to: "api/v1/merchant_customers#index"
   
   get "/api/v1/merchants/:id/items", to: "api/v1/merchant_items#index"
   

@@ -1,5 +1,5 @@
 class CustomerSerializer
     include JSONAPI::Serializer
 
-    attriburtes :first_name, :last_name
+    attributes :first_name, :last_name
 end
