@@ -3,7 +3,7 @@ class Api::V1::MerchantsController < ApplicationController
     def index
         merchants = Merchant.all
 
-        if params[:sort]
+        if params[:sorted]
             merchants = merchants.sorted_by_created_at
             render json: MerchantSerializer.new(merchants)
         elsif params[:status]
@@ -23,7 +23,8 @@ class Api::V1::MerchantsController < ApplicationController
     end
 
     def create
-        render json: Merchant.create(merchant_params)
+        new_merchant = Merchant.create(merchant_params)
+        render json: MerchantSerializer.new(new_merchant), status: 201
     end
 
     def update
