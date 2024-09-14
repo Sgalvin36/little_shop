@@ -2,6 +2,8 @@ require "rails_helper"
 
 RSpec.describe Merchant do
     describe "instance methods" do
+        
+        
         describe "#index" do
             it "returns all merchant objects" do
                 merchant1 = Merchant.create(name: "Skippy")
@@ -50,6 +52,16 @@ RSpec.describe Merchant do
                 expect(response).to be_successful
                 expect(created_merchant.name).to eq("Joe")
             end
+        end
+        it "returns merchant data for a given item ID" do
+        
+            get "/api/v1/merchants/#{@merchant.id}/items"
+        
+            expect(response).to be_successful 
+    
+            merchant_items = JSON.parse(response.body, symbolize_names: true)
+        
+            expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
         end
     end
 end

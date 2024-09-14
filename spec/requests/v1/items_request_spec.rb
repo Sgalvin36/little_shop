@@ -3,25 +3,25 @@ require "rails_helper"
 describe "Items API" do
     before(:each) do
         @merchant = Merchant.create!(name: 'Test Merchant')
-        @item1 = Item.create(
+        @item1 = @merchant.items.create(
             name: 'Cheese',
             description: 'Smells Bad',
             unit_price: 100.00,
             merchant: @merchant
         )
-        @item2 = Item.create(
+        @item2 = @merchant.items.create(
             name: 'Bread',
             description: 'Freshly Baked',
             unit_price: 50.00,
             merchant: @merchant
         )
-        @item3 = Item.create(
+        @item3 = @merchant.items.create(
             name: 'Milk',
             description: 'Dairy Product',
             unit_price: 75.00,
             merchant: @merchant
         )
-        @item4 = Item.create(
+        @item4 = @merchant.items.create(
             name: 'Butter',
             description: 'Creamy and Rich',
             unit_price: 120.00,
@@ -143,4 +143,8 @@ describe "Items API" do
         expect(item.unit_price).to_not eq(previous_price)
         expect(item.unit_price).to eq(80.25)
     end
+
+    
+    
 end
+
