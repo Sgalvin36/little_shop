@@ -133,7 +133,7 @@ RSpec.describe Merchant do
             expect(updated_merchant.name).to_not eq(old_merchant.name)
             expect(updated_merchant.name).to eq("Saul")
         end
-        it "returns merchant data for a given item ID" do
+        it "returns items for given merchant ID" do
         
             get "/api/v1/merchants/#{@merchant.id}/items"
         

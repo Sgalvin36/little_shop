@@ -153,6 +153,17 @@ describe "Items API" do
         end
     end
 
+    it "returns merchant data for a given item ID" do
+        
+        get "/api/v1/items/#{@item1.id}/merchant"
+    
+        expect(response).to be_successful 
+
+        merchant_items = JSON.parse(response.body, symbolize_names: true)
+    
+        expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
+    end
+
     
     
 end
