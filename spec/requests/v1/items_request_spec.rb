@@ -107,7 +107,7 @@ describe "Items API" do
             item_params = { unit_price: 80.25 }
             headers = {"CONTENT_TYPE" => "application/json"}
             
-            patch "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+            put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
             item = Item.find_by(id: item_id)
 
             expect(response).to be_successful

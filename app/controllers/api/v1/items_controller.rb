@@ -1,12 +1,12 @@
 class Api::V1::ItemsController < ApplicationController
     def index
-      @items = if params[:sort] == 'unit_price'
+      @items = if params[:sorted]
                 Item.sorted_by_price
               else
                 Item.all
               end
 
-      render json: ItemSerializer.new(@items).serializable_hash.to_json
+      render json: ItemSerializer.new(@items)
     end
 
     def show
@@ -15,12 +15,14 @@ class Api::V1::ItemsController < ApplicationController
     end
 
     def create
-        render json: Item.create(item_params)
+        new_item = Item.create(item_params)
+        render json: ItemSerializer.new(new_item), status: 201
     end
 
     def update
         update_item = Item.find(params[:id])
-        render json: update_item.update(item_params)
+        update_item.update(item_params)
+        render json: ItemSerializer.new(update_item)
     end
 
     def destroy
