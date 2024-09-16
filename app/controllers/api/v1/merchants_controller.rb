@@ -28,14 +28,19 @@ class Api::V1::MerchantsController < ApplicationController
         if merchant.save
         render json: MerchantSerializer.new(merchant), status: 201
         else
-            render json: { errors: merchant.errors.full_messages }, status: :bad_request        end
+            render json: { errors: merchant.errors.full_messages }, status: :bad_request       
+        end
     end
 
     def update
-        update_merchant = Merchant.find(params[:id])
-        update_merchant.update(merchant_params)
-        render json: MerchantSerializer.new(update_merchant).serializable_hash.to_json
-      end
+       merchant = Merchant.find(params[:id])
+       
+       if merchant.update(merchant_params)
+        render json: MerchantSerializer.new(merchant).serializable_hash.to_json
+       else
+        render json: {errors: merchant.errors.full_messages}, status: :bad_request
+       end
+    end
 
     def destroy
        merchant = Merchant.find(params[:id])
