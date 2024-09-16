@@ -114,6 +114,52 @@ describe "Items API" do
             expect(item.unit_price).to_not eq(previous_price)
             expect(item.unit_price).to eq(80.25)
         end
+
+        describe "SAD path" do
+            it "returns expected error message when no id is given" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 80.25 }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/''", headers: headers, params: JSON.generate({item: item_params})
+                
+                expected = {
+                    errors: "Couldn't find Item with 'id'=''",
+                    message: "Your status code is 404"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when id is not found" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 80.25 }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/71", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Couldn't find Item with 'id'=71",
+                    message: "Your status code is 404"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+        end
     end
 
     describe "#DELETE" do
