@@ -23,8 +23,12 @@ class Api::V1::MerchantsController < ApplicationController
     end
 
     def create
-        new_merchant = Merchant.create(merchant_params)
-        render json: MerchantSerializer.new(new_merchant), status: 201
+        merchant = Merchant.create(merchant_params)
+        
+        if merchant.save
+        render json: MerchantSerializer.new(merchant), status: 201
+        else
+            render json: { errors: merchant.errors.full_messages }, status: :bad_request        end
     end
 
     def update

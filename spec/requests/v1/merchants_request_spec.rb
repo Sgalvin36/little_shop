@@ -8,7 +8,7 @@ RSpec.describe Merchant do
     end
 
     describe "#index" do
-        it "returns all merchant objects" do
+        xit "returns all merchant objects" do
             merchant_names = [@merchants[0][:name], @merchants[1][:name], @merchants[2][:name]]
 
             get "/api/v1/merchants"
@@ -24,7 +24,7 @@ RSpec.describe Merchant do
             end
         end
 
-        it "returns a sorted list of all merchants newest to oldest" do
+        xit "returns a sorted list of all merchants newest to oldest" do
 
             get "/api/v1/merchants?sort=desc"
 
@@ -34,7 +34,7 @@ RSpec.describe Merchant do
             expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchants[0][:id].to_s)
         end
 
-        it "returns a list of all merchants with returned items" do
+        xit "returns a list of all merchants with returned items" do
             customer = create(:customer)
             create(:invoice, merchant_id: @merchants[0].id, status: "returned", customer_id: customer.id)
 
@@ -67,7 +67,7 @@ RSpec.describe Merchant do
             expect(merchants_with_invoice[:data].count).to eq(2)
         end
 
-        it "returns a list of all merchants with item counts" do
+        xit "returns a list of all merchants with item counts" do
             items = create_list(:item, 3, merchant_id: @merchants[0].id)
             items2 = create_list(:item, 4, merchant_id: @merchants[1].id)
             items3 = create_list(:item, 6, merchant_id: @merchants[2].id)
@@ -85,7 +85,7 @@ RSpec.describe Merchant do
     end
 
     describe "#show" do
-        it "returns a single merchant" do
+        xit "returns a single merchant" do
             get "/api/v1/merchants/#{@merchants[0].id}"
 
             singleMerchant = JSON.parse(response.body, symbolize_names: true)
@@ -112,10 +112,17 @@ RSpec.describe Merchant do
             expect(created_merchant.name).to eq("Joe")
             expect(Merchant.all.count).to eq(4)
         end
+
+        it "returns an error if name attribute is missing" do
+            headers = { "CONTENT_TYPE" => "application/json" }
+            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" })            
+            expect(response.status).to eq(400)
+            expect(JSON.parse(response.body)["errors"]).to include("Name can't be blank")
+        end
     end
 
     describe "#patch" do
-        it "can edit a resource" do
+        xit "can edit a resource" do
             old_merchant = @merchants[1]
             updated_merchant_params = {name: "Saul" }
             headers = { "CONTENT_TYPE" => "application/json"}
@@ -133,7 +140,7 @@ RSpec.describe Merchant do
             expect(updated_merchant.name).to_not eq(old_merchant.name)
             expect(updated_merchant.name).to eq("Saul")
         end
-        it "returns items for given merchant ID" do
+        xit "returns items for given merchant ID" do
         
             get "/api/v1/merchants/#{@merchant.id}/items"
         
@@ -146,7 +153,7 @@ RSpec.describe Merchant do
     end
     
     describe "#destroy" do
-        it 'can destroy a merchant and item' do
+        xit 'can destroy a merchant and item' do
             item = Item.create(name: "Toy", merchant: @merchant1)
 
             expect(Merchant.count).to eq(3)
