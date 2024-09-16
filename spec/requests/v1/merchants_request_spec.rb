@@ -98,7 +98,7 @@ RSpec.describe Merchant do
 
         describe"#show SAD path" do
             it "will gracefully handle if a merchant doesnt exist" do
-                show "/api/v1/merchants/12345678998765432"
+                get "/api/v1/merchants/12345678998765432"
 
                 expect(response).to_not be_successful
                 expect(response.status).to eq(404)
