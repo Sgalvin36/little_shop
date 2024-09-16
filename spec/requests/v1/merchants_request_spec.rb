@@ -8,84 +8,95 @@ RSpec.describe Merchant do
     end
 
     describe "#index" do
-        it "returns all merchant objects" do
-            merchant_names = [@merchants[0][:name], @merchants[1][:name], @merchants[2][:name]]
+        describe "#index HAPPY paths" do
+            it "returns all merchant objects" do
+                merchant_names = [@merchants[0][:name], @merchants[1][:name], @merchants[2][:name]]
 
-            get "/api/v1/merchants"
+                get "/api/v1/merchants"
 
-            expect(response).to be_successful
+                expect(response).to be_successful
+                
+                allMerchants = JSON.parse(response.body, symbolize_names: true)
+
+                expect(allMerchants[:data].length).to eq(3)
+                allMerchants[:data].each do |merchant|
+                    expect(merchant).to have_key(:id)
+                    expect(merchant_names).to include(merchant[:attributes][:name])
+                end
+            end
+
+            it "returns a sorted list of all merchants newest to oldest" do
+
+                get "/api/v1/merchants?sorted=desc"
+
+                expect(response).to be_successful
+                sortedMerchants = JSON.parse(response.body, symbolize_names: true)
+                expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchants[2][:id].to_s)
+                expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchants[0][:id].to_s)
+            end
+
+            it "returns a list of all merchants with returned items" do
+                customer = create(:customer)
+                create(:invoice, merchant_id: @merchants[0].id, status: "returned", customer_id: customer.id)
+
+                get "/api/v1/merchants?status=returned"
+
+                expect(response).to be_successful
+                merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+                
+                expect(merchants_with_invoice[:data].count).to eq(1)
+                expect(merchants_with_invoice[:data][0][:attributes][:name]).to eq(@merchants[0].name)
+
+                create(:invoice, merchant_id: @merchants[2].id, status: "returned", customer_id: customer.id)
+
+                get "/api/v1/merchants?status=returned"
+
+                expect(response).to be_successful
+                merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+                
+                expect(merchants_with_invoice[:data].count).to eq(2)
             
-            allMerchants = JSON.parse(response.body, symbolize_names: true)
+                expect(merchants_with_invoice[:data][1][:attributes][:name]).to eq(@merchants[2].name)
 
-            expect(allMerchants[:data].length).to eq(3)
-            allMerchants[:data].each do |merchant|
-                expect(merchant).to have_key(:id)
-                expect(merchant_names).to include(merchant[:attributes][:name])
+                create(:invoice, merchant_id: @merchants[1].id, status: "shipped", customer_id: customer.id)
+
+                get "/api/v1/merchants?status=returned"
+
+                expect(response).to be_successful
+                merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
+
+                expect(merchants_with_invoice[:data].count).to eq(2)
+            end
+
+            it "returns a list of all merchants with item counts" do
+                items = create_list(:item, 3, merchant_id: @merchants[0].id)
+                items2 = create_list(:item, 4, merchant_id: @merchants[1].id)
+                items3 = create_list(:item, 6, merchant_id: @merchants[2].id)
+    
+                get "/api/v1/merchants?count=true"
+    
+                expect(response).to be_successful
+                
+                allMerchants = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(allMerchants[:data][0][:attributes][:item_count]).to eq(3)
+                expect(allMerchants[:data][1][:attributes][:item_count]).to eq(4)
+                expect(allMerchants[:data][2][:attributes][:item_count]).to eq(6)
             end
         end
 
-        it "returns a sorted list of all merchants newest to oldest" do
-
-            get "/api/v1/merchants?sorted=desc"
-
-            expect(response).to be_successful
-            sortedMerchants = JSON.parse(response.body, symbolize_names: true)
-            expect((sortedMerchants[:data][0][:id]).to_s).to eq(@merchants[2][:id].to_s)
-            expect((sortedMerchants[:data][2][:id]).to_s).to eq(@merchants[0][:id].to_s)
-        end
-
-        it "returns a list of all merchants with returned items" do
-            customer = create(:customer)
-            create(:invoice, merchant_id: @merchants[0].id, status: "returned", customer_id: customer.id)
-
-            get "/api/v1/merchants?status=returned"
-
-            expect(response).to be_successful
-            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
-            
-            expect(merchants_with_invoice[:data].count).to eq(1)
-            expect(merchants_with_invoice[:data][0][:attributes][:name]).to eq(@merchants[0].name)
-
-            create(:invoice, merchant_id: @merchants[2].id, status: "returned", customer_id: customer.id)
-
-            get "/api/v1/merchants?status=returned"
-
-            expect(response).to be_successful
-            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
-            
-            expect(merchants_with_invoice[:data].count).to eq(2)
-           
-            expect(merchants_with_invoice[:data][1][:attributes][:name]).to eq(@merchants[2].name)
-
-            create(:invoice, merchant_id: @merchants[1].id, status: "shipped", customer_id: customer.id)
-
-            get "/api/v1/merchants?status=returned"
-
-            expect(response).to be_successful
-            merchants_with_invoice = JSON.parse(response.body, symbolize_names: true)
-
-            expect(merchants_with_invoice[:data].count).to eq(2)
-        end
-
-        it "returns a list of all merchants with item counts" do
-            items = create_list(:item, 3, merchant_id: @merchants[0].id)
-            items2 = create_list(:item, 4, merchant_id: @merchants[1].id)
-            items3 = create_list(:item, 6, merchant_id: @merchants[2].id)
-
-            get "/api/v1/merchants?count=true"
-
-            expect(response).to be_successful
-            
-            allMerchants = JSON.parse(response.body, symbolize_names: true)
-
-            expect(allMerchants[:data][0][:attributes][:item_count]).to eq(3)
-            expect(allMerchants[:data][1][:attributes][:item_count]).to eq(4)
-            expect(allMerchants[:data][2][:attributes][:item_count]).to eq(6)
+        describe "#index SAD paths" do
+        #Check to make sure keys are valids
+        #outside of range
+        #data validations?
+            it "will gracefully handle if" do
+                
+            end
         end
     end
 
     describe "#show" do
-        describe"#show SAD path" do
+        describe"#show HAPPY path" do
             it "returns a single merchant" do
                 get "/api/v1/merchants/#{@merchants[0].id}"
 
