@@ -181,6 +181,28 @@ describe "Items API" do
     
                 expect(response_body).to eq(expected)
             end
+
+            it "returns expected error message when changed parameter is wrong type" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 'seven'}
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Validation failed: Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
         end
     end
 
