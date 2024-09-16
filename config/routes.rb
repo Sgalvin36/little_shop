@@ -11,9 +11,6 @@ Rails.application.routes.draw do
   get "/api/v1/items/find", to: "api/v1/items#find"
   
 
-#   GET /api/v1/items/find?min_price=50
-# GET /api/v1/items/find?max_price=150
-# GET /api/v1/items/find?max_price=150&min_price=50
   get "/api/v1/merchants/:merchant_id/customers", to: "api/v1/merchant_customers#index"
   
   get "/api/v1/merchants/:id/items", to: "api/v1/merchant_items#index"
