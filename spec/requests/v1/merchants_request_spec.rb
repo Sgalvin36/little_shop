@@ -128,6 +128,13 @@ RSpec.describe Merchant do
             expect(created_merchant.name).to eq("Joe")
             expect(Merchant.all.count).to eq(4)
         end
+
+        it "returns an error if name attribute is missing" do
+            headers = { "CONTENT_TYPE" => "application/json" }
+            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" })            
+            expect(response.status).to eq(400)
+            expect(JSON.parse(response.body)["errors"]).to include("Name can't be blank")
+        end
     end
 
     describe "#patch" do
@@ -149,6 +156,7 @@ RSpec.describe Merchant do
             expect(updated_merchant.name).to_not eq(old_merchant.name)
             expect(updated_merchant.name).to eq("Saul")
         end
+
         it "returns items for given merchant ID" do
             items = create_list(:item, 3, merchant_id: @merchants[0].id)
             get "/api/v1/merchants/#{@merchants[0].id}/items"
@@ -162,14 +170,17 @@ RSpec.describe Merchant do
         end
     end
     
-    describe "#delete" do
-        it 'can delete a merchant' do
+    describe "#destroy" do
+        it 'can destroy a merchant and item' do
+            item = Item.create(name: "Toy", merchant: @merchant1)
+
             expect(Merchant.count).to eq(3)
             old_id = @merchants[1].id
             delete "/api/v1/merchants/#{old_id}"
 
             expect(response).to be_successful
             expect(Merchant.count).to eq(2)
+            expect(Item.count).to eq(0)
 
             removed_merchant = Merchant.find_by(id: old_id)
             expect(removed_merchant).to be_nil
