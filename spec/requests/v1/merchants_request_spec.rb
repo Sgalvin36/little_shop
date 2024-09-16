@@ -158,8 +158,8 @@ RSpec.describe Merchant do
         end
 
         it "returns items for given merchant ID" do
-            
-            get "/api/v1/merchants/#{@merchant.id}/items"
+            items = create_list(:item, 3, merchant_id: @merchants[0].id)
+            get "/api/v1/merchants/#{@merchants[0].id}/items"
         
             expect(response).to be_successful 
     
@@ -177,8 +177,6 @@ RSpec.describe Merchant do
             expect(Merchant.count).to eq(3)
             old_id = @merchants[1].id
             delete "/api/v1/merchants/#{old_id}"
-
-            delete "/api/v1/merchants/#{@merchant1.id}"
 
             expect(response).to be_successful
             expect(Merchant.count).to eq(2)
