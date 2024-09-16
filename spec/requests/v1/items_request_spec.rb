@@ -4,104 +4,167 @@ describe "Items API" do
     before(:all) do
         Item.destroy_all
         @merchant = Merchant.create!(name: 'Test Merchant')
-        @item1 = Item.create(
-            name: 'Cheese',
-            description: 'Smells Bad',
-            unit_price: 100.00,
-            merchant: @merchant
-        )
-        @item2 = Item.create(
-            name: 'Bread',
-            description: 'Freshly Baked',
-            unit_price: 50.00,
-            merchant: @merchant
-        )
-        @item3 = Item.create(
-            name: 'Milk',
-            description: 'Dairy Product',
-            unit_price: 75.00,
-            merchant: @merchant
-        )
-        @item4 = Item.create(
-            name: 'Butter',
-            description: 'Creamy and Rich',
-            unit_price: 120.00,
-            merchant: @merchant
-        )
+        @items = create_list(:item, 4, merchant_id: @merchant.id)  
     end
 
-    it 'displays a list of all items' do
-        get '/api/v1/items'
+    describe "#GET" do
+        it 'displays a list of all items' do
+            get '/api/v1/items'
 
-        expect(response).to be_successful
+            expect(response).to be_successful
 
 
-        items = JSON.parse(response.body, symbolize_names: true)
+            items = JSON.parse(response.body, symbolize_names: true)
 
-        items[:data].each do |item|
-            expect(item[:id].to_i).to be_an(Integer)
+            
 
-            expect(item[:attributes]).to have_key(:name)
-            expect(item[:attributes][:name]).to be_a(String)
+            items[:data].each do |item|
+                expect(item[:id]).to be_an(String)
+                expect(item[:type]).to eq("item")
 
-            expect(item[:attributes]).to have_key(:description)
-            expect(item[:attributes][:description]).to be_a(String)
+                expect(item[:attributes][:name]).to be_a(String)
+                expect(item[:attributes][:description]).to be_a(String)
+                expect(item[:attributes][:unit_price]).to be_a(Float)
+            end
+        end   
 
-            expect(item[:attributes]).to have_key(:unit_price)
-            expect(item[:attributes][:unit_price]).to be_a(Float)
+        it 'displays all items sorted by price' do
+            get '/api/v1/items?sort=unit_price'
+
+            expect(response).to be_successful
+
+            items = JSON.parse(response.body, symbolize_names: true)
+
+            prices = items[:data].map { |item| item[:attributes][:unit_price] }
+            expect(prices).to eq(prices.sort)
+
+            items[:data].each do |item|
+                expect(item[:id]).to be_an(String)
+                expect(item[:attributes][:description]).to be_a(String)
+            end
+        end
+
+        it "displays one item" do
+            items = create_list(:item, 2, merchant_id: @merchant.id)
+            get "/api/v1/items/#{items[0].id}"
+
+            expect(response).to be_successful
+
+            item1 = JSON.parse(response.body, symbolize_names: true)
+            item1 = item1[:data]
+
+            expect(item1[:id].to_i).to eq(items[0].id)
+            expect(item1[:type]).to eq("item")
+            expect(item1[:attributes][:name]).to eq(items[0].name)
+            expect(item1[:attributes][:description]).to eq(items[0].description)
+            expect(item1[:attributes][:unit_price]).to eq(items[0].unit_price)
+
+            get "/api/v1/items/#{items[1].id}"
+
+            expect(response).to be_successful
+
+            item2 = JSON.parse(response.body, symbolize_names: true)
+            item2 = item2[:data]
+
+            expect(item2[:id].to_i).to eq(items[1].id)
+            expect(item2[:type]).to eq("item")
+            expect(item2[:attributes][:name]).to eq(items[1].name)
+            expect(item2[:attributes][:description]).to eq(items[1].description)
+            expect(item2[:attributes][:unit_price]).to eq(items[1].unit_price)
         end
     end
 
-    it "creates a new item" do
-        item_params = {name: "pizza",
-        description: "The best handheld food around!",
-        unit_price: 42.00,
-        merchant_id: @merchant.id
-        }
+    describe "#POST" do
+        it "creates a new item" do
+            item_params = {name: "pizza",
+                description: "The best handheld food around!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id
+                }
 
-        headers = { "CONTENT_TYPE" => "application/json" }
+            headers = { "CONTENT_TYPE" => "application/json" }
 
-        post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
-        create_item = Item.last
+            post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
 
-        expect(response).to be_successful
+            expect(response).to be_successful
 
-        item = Item.last
-        expect(item.name).to eq("pizza")
-        expect(item.description).to eq("The best handheld food around!")
-        expect(item.unit_price).to eq(42.00)
-        expect(item.merchant_id).to eq(@merchant.id)
+            item = Item.last
+            expect(item.name).to eq(item_params[:name])
+            expect(item.description).to eq(item_params[:description])
+            expect(item.unit_price).to eq(item_params[:unit_price])
+            expect(item.merchant_id).to eq(item_params[:merchant_id])
+        end
     end
 
-    it "can update an existing Item" do 
-        item_id = Item.create({name: "Pizza",
-        description: "Topped with pineapple!",
-        unit_price: 42.00,
-        merchant_id: @merchant.id}).id
+    describe "#PATCH" do
+        it "can update an existing Item" do 
+            item_id = Item.create({name: "Pizza",
+            description: "Topped with pineapple!",
+            unit_price: 42.00,
+            merchant_id: @merchant.id}).id
 
-        previous_price = Item.last.unit_price
-        item_params = { unit_price: 80.25 }
-        headers = {"CONTENT_TYPE" => "application/json"}
+            previous_price = Item.last.unit_price
+            item_params = { unit_price: 80.25 }
+            headers = {"CONTENT_TYPE" => "application/json"}
+            
+            put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+            item = Item.find_by(id: item_id)
+
+            expect(response).to be_successful
+            expect(item.unit_price).to_not eq(previous_price)
+            expect(item.unit_price).to eq(80.25)
+        end
+    end
+
+    describe "#DELETE" do
+        it "can destroy an item" do
+            item = create(:item, merchant_id: @merchant.id)
+
+            expect(Item.count).to eq(5)
         
-        patch "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
-        item = Item.find_by(id: item_id)
-        expect(response).to be_successful
-        expect(item.unit_price).to_not eq(previous_price)
-        expect(item.unit_price).to eq(80.25)
+            delete "/api/v1/items/#{item.id}"
+        
+            expect(response).to be_successful
+            expect(Item.count).to eq(4)
+            expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+
+        it "can destroy item invoices associated with the item" do
+            item = create(:item, merchant_id: @merchant.id)
+            customer1 = create(:customer)
+            customer2 = create(:customer)
+            
+            invoice1 = create(:invoice, merchant_id: @merchant.id, status:"shipped", customer_id:customer1.id)
+            invoice2 = create(:invoice, merchant_id: @merchant.id, status:"shipped", customer_id:customer2.id)
+            
+            create(:invoice_item, item_id: item.id, invoice_id: invoice1)
+            create(:invoice_item, item_id: item.id, invoice_id: invoice1)
+            
+            
+            expect(Item.count).to eq(5)
+            expect(InvoiceItem.count).to eq(2)
+        
+            delete "/api/v1/items/#{item.id}"
+        
+            expect(response).to be_successful
+            expect(Item.count).to eq(4)
+            expect(InvoiceItem.count).to eq(0)
+            expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
     end
 
-    it "can destroy an item" do
-        item = Item.create(name: "REGRET",
-            description: "Hard work rarely pays off.",
-            unit_price: 69.00,
-            merchant_id: @merchant.id)
+    it "returns merchant data for a given item ID" do
         
-        expect(Item.count).to eq(5)
+        get "/api/v1/items/#{@item1.id}/merchant"
     
-        delete "/api/v1/items/#{item.id}"
+        expect(response).to be_successful 
+
+        merchant_items = JSON.parse(response.body, symbolize_names: true)
     
-        expect(response).to be_successful
-        expect(Item.count).to eq(4)
-        expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
     end
+
+    
+    
 end
+

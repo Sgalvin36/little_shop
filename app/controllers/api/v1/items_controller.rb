@@ -1,20 +1,32 @@
 class Api::V1::ItemsController < ApplicationController
     def index
-      @items = Item.all
-      render json: ItemSerializer.new(@items).serializable_hash.to_json
+      @items = if params[:sorted]
+                Item.sorted_by_price
+              else
+                Item.all
+              end
+
+      render json: ItemSerializer.new(@items)
+    end
+
+    def show
+      item = Item.find(params[:id])
+      render json: ItemSerializer.new(item)
     end
 
     def create
-        render json: Item.create(item_params)
+        new_item = Item.create(item_params)
+        render json: ItemSerializer.new(new_item), status: 201
     end
 
     def update
         update_item = Item.find(params[:id])
-        render json: update_item.update(item_params)
+        update_item.update(item_params)
+        render json: ItemSerializer.new(update_item)
     end
 
     def destroy
-        render json: Item.delete(params[:id]), status: 204
+        render json: Item.destroy(params[:id]), status: 204
     end
 
     private
