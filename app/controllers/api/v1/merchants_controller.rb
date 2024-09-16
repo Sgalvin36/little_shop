@@ -41,6 +41,20 @@ class Api::V1::MerchantsController < ApplicationController
         render json: Merchant.delete(params[:id])
     end
 
+    def find
+        items = Item.filter_params(params)
+    #     if params[:name].present?
+    #         merchants = Merchant.where("name ILIKE ?", "%#{params[:name]}%").order(:name)
+    #         if merchants.any?
+    #             render json: MerchantSerializer.new(merchants.first)
+    #         else
+    #             render json: { error: 'Merchant not found' }, status: :not_found
+    #         end
+    #     else
+    #         render json: { error: 'Name parameter cannot be empty' }, status: :bad_request
+    #     end
+    # end
+
 private
 
     def merchant_params

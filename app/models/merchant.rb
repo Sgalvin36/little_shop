@@ -14,4 +14,8 @@ class Merchant < ApplicationRecord
     def item_count
         items.count
     end
+
+    
+
+    # scope :filter_by_name, ->(name = nil) { name.present? ? where("name ILIKE ?", "%#{name}%") : all }
 end

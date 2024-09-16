@@ -234,9 +234,55 @@ describe "Items API" do
         merchant_items = JSON.parse(response.body, symbolize_names: true)
     
         expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
+    end 
+    
+    it "finds all items based on search criteria" do
+        get "/api/v1/items/find?name=#{@items[0].name}"
+
+        expect(response).to be_successful
+
+        found_items= JSON.parse(response.body, symbolize_names: true)
+
+        expect(found_items[:data][0][:id].to_i).to eq(@items[0].id)
+        expect(found_items[:data][0][:attributes][:name]).to eq(@items[0].name)
+
+
     end
 
-    
-    
+    it 'filter items by min_price' do
+        get '/api/v1/items/find?min_price=10.00'
+
+        expect(response).to be_successful
+
+        filter_items = JSON.parse(response.body, symbolize_names: true)
+
+        filter_items[:data].each do |item|
+            expect(item[:attributes][:unit_price]).to be >= 10.00
+        end
+    end
+
+    it 'filter items by max_price' do
+        get '/api/v1/items/find?max_price=20.00'
+
+        expect(response).to be_successful
+
+        filter_items = JSON.parse(response.body, symbolize_names: true)
+
+        filter_items[:data].each do |item|
+            expect(item[:attributes][:unit_price]).to be <= 20.00
+        end
+    end
+
+    it 'filter items by min_price and max_price' do
+        get '/api/v1/items/find?min_price=10.00&max_price=20.00'
+
+        expect(response).to be_successful
+
+        filter_items = JSON.parse(response.body, symbolize_names: true)
+
+        filter_items[:data].each do |item|
+            expect(item[:attributes][:unit_price]).to be_between(10.00, 20.00)
+        end
+    end
 end
 
