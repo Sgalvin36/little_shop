@@ -2,6 +2,8 @@ class Item < ApplicationRecord
   belongs_to :merchant
   has_many :invoice_items, dependent: :destroy
 
+  validates :unit_price, presence: true
+  validates :unit_price, numericality: true
   def self.sorted_by_price
     order(unit_price: :asc)
   end

@@ -148,11 +148,33 @@ describe "Items API" do
                 item_params = { unit_price: 80.25 }
                 headers = {"CONTENT_TYPE" => "application/json"}
                 
-                put "/api/v1/items/71", headers: headers, params: JSON.generate({item: item_params})
+                put "/api/v1/items/1098145987671", headers: headers, params: JSON.generate({item: item_params})
 
                 expected = {
-                    errors: "Couldn't find Item with 'id'=71",
+                    errors: "Couldn't find Item with 'id'=1098145987671",
                     message: "Your status code is 404"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when changed parameter is blank" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: '' }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    message: "Your status code is 422"
                 } 
     
                 response_body = JSON.parse(response.body, symbolize_names: true)
