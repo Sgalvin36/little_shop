@@ -22,7 +22,7 @@ class Api::V1::MerchantsController < ApplicationController
 
             render json: MerchantSerializer.new(merchant)
         rescue ActiveRecord::RecordNotFound => exception
-            render json: ErrorSerializer.errorserialize(exception, "404"), status: :not_found
+            render json: ErrorSerializer.serialize(exception, "404"), status: :not_found
         end
     end
 

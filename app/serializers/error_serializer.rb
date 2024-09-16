@@ -1,5 +1,5 @@
 class ErrorSerializer
-    def self.errorserialize(error, status)
+    def self.serialize(error, status)
         {
           "message": "Your status code is #{status}",
           "errors": error.message
