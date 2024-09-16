@@ -155,7 +155,7 @@ describe "Items API" do
 
     it "returns merchant data for a given item ID" do
         
-        get "/api/v1/items/#{@item.id}/merchant"
+        get "/api/v1/items/#{@items[1].id}/merchant"
     
         expect(response).to be_successful 
 
