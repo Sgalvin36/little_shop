@@ -94,6 +94,50 @@ describe "Items API" do
             expect(item.unit_price).to eq(item_params[:unit_price])
             expect(item.merchant_id).to eq(item_params[:merchant_id])
         end
+        
+        describe "SAD path" do
+            it "responds with an error if parameters are left empty" do
+                item_params = {name: "pizza",
+                description: "The best handheld food around!",
+                unit_price:'',
+                merchant_id: @merchant.id
+                }
+
+                headers = { "CONTENT_TYPE" => "application/json" }
+
+                post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
+
+                expected = {
+                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "responds with an error if parameters are left empty" do
+                item_params = {name: "pizza",
+                description: "The best handheld food around!",
+                unit_price:'seven',
+                merchant_id: @merchant.id
+                }
+
+                headers = { "CONTENT_TYPE" => "application/json" }
+
+                post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
+
+                expected = {
+                    errors: "Validation failed: Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+        end
     end
 
     describe "#PATCH" do
