@@ -26,7 +26,7 @@ RSpec.describe Merchant do
 
         it "returns a sorted list of all merchants newest to oldest" do
 
-            get "/api/v1/merchants?sort=desc"
+            get "/api/v1/merchants?sorted=desc"
 
             expect(response).to be_successful
             sortedMerchants = JSON.parse(response.body, symbolize_names: true)

@@ -29,7 +29,7 @@ describe "Items API" do
         end   
 
         it 'displays all items sorted by price' do
-            get '/api/v1/items?sort=unit_price'
+            get '/api/v1/items?sorted=unit_price'
 
             expect(response).to be_successful
 
@@ -155,7 +155,7 @@ describe "Items API" do
 
     it "returns merchant data for a given item ID" do
         
-        get "/api/v1/items/#{@item1.id}/merchant"
+        get "/api/v1/items/#{@item.id}/merchant"
     
         expect(response).to be_successful 
 
