@@ -29,6 +29,18 @@ class Api::V1::ItemsController < ApplicationController
         render json: Item.destroy(params[:id]), status: 204
     end
 
+    def find
+      items = Item.filter_params(params)
+  
+      render json: ItemSerializer.new(items)
+        
+      #     render json: { error: 'Items not found' }, status: :not_found
+      #   end
+      # else
+      #   render json: { error: 'Name parameter cannot be empty' }, status: :bad_request
+      # end
+    end
+    
     private
 
     def item_params
