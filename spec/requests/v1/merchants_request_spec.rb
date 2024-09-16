@@ -85,13 +85,29 @@ RSpec.describe Merchant do
     end
 
     describe "#show" do
-        it "returns a single merchant" do
-            get "/api/v1/merchants/#{@merchants[0].id}"
+        describe"#show SAD path" do
+            it "returns a single merchant" do
+                get "/api/v1/merchants/#{@merchants[0].id}"
 
-            singleMerchant = JSON.parse(response.body, symbolize_names: true)
+                singleMerchant = JSON.parse(response.body, symbolize_names: true)
 
-            expect(response).to be_successful
-            expect(singleMerchant[:data][:attributes][:name]).to eq (@merchants[0].name)
+                expect(response).to be_successful
+                expect(singleMerchant[:data][:attributes][:name]).to eq (@merchants[0].name)
+            end
+        end
+
+        describe"#show SAD path" do
+            it "will gracefully handle if a merchant doesnt exist" do
+                get "/api/v1/merchants/12345678998765432"
+
+                expect(response).to_not be_successful
+                expect(response.status).to eq(404)
+
+                data = JSON.parse(response.body, symbolize_names: true)
+
+                expect(data[:message]).to eq("Your status code is 404")
+                expect(data[:errors]).to eq("Couldn't find Merchant with 'id'=12345678998765432")
+            end
         end
     end
 
@@ -134,14 +150,15 @@ RSpec.describe Merchant do
             expect(updated_merchant.name).to eq("Saul")
         end
         it "returns items for given merchant ID" do
-        
-            get "/api/v1/merchants/#{@merchant.id}/items"
+            items = create_list(:item, 3, merchant_id: @merchants[0].id)
+            get "/api/v1/merchants/#{@merchants[0].id}/items"
         
             expect(response).to be_successful 
     
             merchant_items = JSON.parse(response.body, symbolize_names: true)
-        
-            expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
+            # binding.pry
+            expect(merchant_items[:data][0][:attributes][:merchant_id].to_i).to eq(@merchants[0].id)  
+            
         end
     end
     
