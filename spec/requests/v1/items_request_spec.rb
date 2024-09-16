@@ -190,7 +190,7 @@ describe "Items API" do
     end
 
     it 'filter items by max_price' do
-        get '/api/v1/items/find?max_price=10.00'
+        get '/api/v1/items/find?max_price=20.00'
 
         expect(response).to be_successful
 
