@@ -151,6 +151,32 @@ describe "Items API" do
             expect(InvoiceItem.count).to eq(0)
             expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
         end
+
+        describe "SAD path" do
+            it "returns expected error message when no id is given" do
+                expected = {
+                    errors: "Couldn't find Item with 'id'=''",
+                    message: "Your status code is 404"
+                } 
+    
+                delete "/api/v1/items/''"
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when id is not found" do
+                expected = {
+                    errors: "Couldn't find Item with 'id'=71",
+                    message: "Your status code is 404"
+                } 
+    
+                delete "/api/v1/items/71"
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+        end
     end
 
     it "returns merchant data for a given item ID" do

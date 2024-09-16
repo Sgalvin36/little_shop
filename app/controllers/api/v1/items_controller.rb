@@ -1,4 +1,7 @@
 class Api::V1::ItemsController < ApplicationController
+    rescue_from ActiveRecord::RecordNotFound, with: :not_found_response
+    rescue_from ActiveRecord::RecordInvalid, with: :not_complete_response
+
     def index
       @items = if params[:sorted]
                 Item.sorted_by_price
@@ -33,6 +36,14 @@ class Api::V1::ItemsController < ApplicationController
 
     def item_params
         params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
+    end
+
+    def not_found_response(exception)
+        render json: ErrorSerializer.serialize(exception, "404"), status: :not_found
+    end
+
+    def not_complete_response(exception)
+        render json: ErrorSerializer.serialize(exception, "422"), status: :unprocessable_entity
     end
 end
 
