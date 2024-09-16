@@ -105,9 +105,8 @@ RSpec.describe Merchant do
 
                 data = JSON.parse(response.body, symbolize_names: true)
 
-                expect(data[:errors]).to be_a(Array)
-                expect(data[:errors].first[:status]).to eq("404")
-                expect(data[:errors].first[:message]).to eq("Couldn't find Merchant with 'id'=12345678998765432")
+                expect(data[:message]).to eq("Your status code is 404")
+                expect(data[:errors]).to eq("Couldn't find Merchant with 'id'=12345678998765432")
             end
         end
     end
