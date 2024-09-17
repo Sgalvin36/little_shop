@@ -106,7 +106,7 @@ RSpec.describe Merchant do
                 data = JSON.parse(response.body, symbolize_names: true)
 
                 expect(data[:message]).to eq("Your status code is 404")
-                expect(data[:errors]).to eq("Couldn't find Merchant with 'id'=12345678998765432")
+                expect(data[:errors]).to eq(["Couldn't find Merchant with 'id'=12345678998765432"])
             end
         end
     end
@@ -131,9 +131,16 @@ RSpec.describe Merchant do
 
         it "returns an error if name attribute is missing" do
             headers = { "CONTENT_TYPE" => "application/json" }
-            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" })            
+            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" }) 
+            
+            expected = {
+                    errors: ["Validation failed: Name can't be blank"],
+                    message: "Your status code is 400"
+                } 
             expect(response.status).to eq(400)
-            expect(JSON.parse(response.body)["errors"]).to include("Name can't be blank")
+            response_body = JSON.parse(response.body, symbolize_names: true)
+    
+            expect(response_body).to eq(expected)
         end
     end
 

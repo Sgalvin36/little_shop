@@ -18,8 +18,6 @@ describe "Merchant customer API" do
   it 'returns a list of all customers for a merchant' do
     get "/api/v1/merchants/#{@merchant.id}/customers"
 
-    puts "Response Status: #{response.status}"
-
     expect(response).to be_successful
 
     customers = JSON.parse(response.body, symbolize_names: true)

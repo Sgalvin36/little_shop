@@ -108,7 +108,7 @@ describe "Items API" do
                 post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
 
                 expected = {
-                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    errors: ["Validation failed: Unit price can't be blank", "Unit price is not a number"],
                     message: "Your status code is 422"
                 } 
 
@@ -129,7 +129,7 @@ describe "Items API" do
                 post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
 
                 expected = {
-                    errors: "Validation failed: Unit price is not a number",
+                    errors: ["Validation failed: Unit price is not a number"],
                     message: "Your status code is 422"
                 } 
 
@@ -173,7 +173,7 @@ describe "Items API" do
                 put "/api/v1/items/''", headers: headers, params: JSON.generate({item: item_params})
                 
                 expected = {
-                    errors: "Couldn't find Item with 'id'=''",
+                    errors: ["Couldn't find Item with 'id'=''"],
                     message: "Your status code is 404"
                 } 
 
@@ -195,7 +195,7 @@ describe "Items API" do
                 put "/api/v1/items/1098145987671", headers: headers, params: JSON.generate({item: item_params})
 
                 expected = {
-                    errors: "Couldn't find Item with 'id'=1098145987671",
+                    errors: ["Couldn't find Item with 'id'=1098145987671"],
                     message: "Your status code is 404"
                 } 
     
@@ -217,7 +217,7 @@ describe "Items API" do
                 put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
                 
                 expected = {
-                    errors: "Validation failed: Merchant must exist",
+                    errors: ["Validation failed: Merchant must exist"],
                     message: "Your status code is 400"
                 } 
 
@@ -239,7 +239,7 @@ describe "Items API" do
                 put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
 
                 expected = {
-                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    errors: ["Validation failed: Unit price can't be blank", "Unit price is not a number"],
                     message: "Your status code is 422"
                 } 
     
@@ -261,7 +261,7 @@ describe "Items API" do
                 put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
 
                 expected = {
-                    errors: "Validation failed: Unit price is not a number",
+                    errors: ["Validation failed: Unit price is not a number"],
                     message: "Your status code is 422"
                 } 
     
@@ -311,7 +311,7 @@ describe "Items API" do
         describe "SAD path" do
             it "returns expected error message when no id is given" do
                 expected = {
-                    errors: "Couldn't find Item with 'id'=''",
+                    errors: ["Couldn't find Item with 'id'=''"],
                     message: "Your status code is 404"
                 } 
     
@@ -323,7 +323,7 @@ describe "Items API" do
 
             it "returns expected error message when id is not found" do
                 expected = {
-                    errors: "Couldn't find Item with 'id'=71",
+                    errors: ["Couldn't find Item with 'id'=71"],
                     message: "Your status code is 404"
                 } 
     
