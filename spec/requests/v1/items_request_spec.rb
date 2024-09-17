@@ -94,6 +94,50 @@ describe "Items API" do
             expect(item.unit_price).to eq(item_params[:unit_price])
             expect(item.merchant_id).to eq(item_params[:merchant_id])
         end
+        
+        describe "SAD path" do
+            it "responds with an error if parameters are left empty" do
+                item_params = {name: "pizza",
+                description: "The best handheld food around!",
+                unit_price:'',
+                merchant_id: @merchant.id
+                }
+
+                headers = { "CONTENT_TYPE" => "application/json" }
+
+                post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
+
+                expected = {
+                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "responds with an error if parameters are left empty" do
+                item_params = {name: "pizza",
+                description: "The best handheld food around!",
+                unit_price:'seven',
+                merchant_id: @merchant.id
+                }
+
+                headers = { "CONTENT_TYPE" => "application/json" }
+
+                post '/api/v1/items', headers: headers, params: JSON.generate(item: item_params)
+
+                expected = {
+                    errors: "Validation failed: Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+        end
     end
 
     describe "#PATCH" do
@@ -113,6 +157,118 @@ describe "Items API" do
             expect(response).to be_successful
             expect(item.unit_price).to_not eq(previous_price)
             expect(item.unit_price).to eq(80.25)
+        end
+
+        describe "SAD path" do
+            it "returns expected error message when no id is given" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 80.25 }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/''", headers: headers, params: JSON.generate({item: item_params})
+                
+                expected = {
+                    errors: "Couldn't find Item with 'id'=''",
+                    message: "Your status code is 404"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when id is not found" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 80.25 }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/1098145987671", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Couldn't find Item with 'id'=1098145987671",
+                    message: "Your status code is 404"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when no id is given" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { merchant_id: nil }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+                
+                expected = {
+                    errors: "Validation failed: Merchant must exist",
+                    message: "Your status code is 400"
+                } 
+
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+            
+            it "returns expected error message when changed parameter is blank" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: '' }
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Validation failed: Unit price can't be blank, Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when changed parameter is wrong type" do
+                item_id = Item.create({name: "Pizza",
+                description: "Topped with pineapple!",
+                unit_price: 42.00,
+                merchant_id: @merchant.id}).id
+    
+                previous_price = Item.last.unit_price
+                item_params = { unit_price: 'seven'}
+                headers = {"CONTENT_TYPE" => "application/json"}
+                
+                put "/api/v1/items/#{item_id}", headers: headers, params: JSON.generate({item: item_params})
+
+                expected = {
+                    errors: "Validation failed: Unit price is not a number",
+                    message: "Your status code is 422"
+                } 
+    
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
         end
     end
 
@@ -150,6 +306,32 @@ describe "Items API" do
             expect(Item.count).to eq(4)
             expect(InvoiceItem.count).to eq(0)
             expect{Item.find(item.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+
+        describe "SAD path" do
+            it "returns expected error message when no id is given" do
+                expected = {
+                    errors: "Couldn't find Item with 'id'=''",
+                    message: "Your status code is 404"
+                } 
+    
+                delete "/api/v1/items/''"
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
+
+            it "returns expected error message when id is not found" do
+                expected = {
+                    errors: "Couldn't find Item with 'id'=71",
+                    message: "Your status code is 404"
+                } 
+    
+                delete "/api/v1/items/71"
+                response_body = JSON.parse(response.body, symbolize_names: true)
+    
+                expect(response_body).to eq(expected)
+            end
         end
     end
 

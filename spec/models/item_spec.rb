@@ -3,4 +3,9 @@ require "rails_helper"
 RSpec.describe Item, type: :model do
     describe "instance methods" do
     end
+
+    describe "validation" do
+        it {should validate_presence_of(:unit_price)}
+        it {should validate_numericality_of(:unit_price)}
+    end
 end

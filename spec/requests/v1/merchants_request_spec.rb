@@ -187,18 +187,19 @@ RSpec.describe Merchant do
             expect{Merchant.find(old_id) }.to raise_error(ActiveRecord::RecordNotFound)
         end
     end
+
     describe "#find" do
         it "finds one merchant based on search criteria" do
             @merchant = Merchant.create!(name: "Kaelin")
-            get "/api/v1/merchants/find?name=#{@merchants[0].name}"
+            get "/api/v1/merchants/find?name=ae"
 
             expect(response).to be_successful
             found_merchant = JSON.parse(response.body, symbolize_names: true)
 
 
 
-            expect(found_merchant[:data][0][:id].to_i).to eq(@merchants[0].id)
-            expect(found_merchant[:data][0][:attributes][:name]).to eq(@merchants[0].name)
+            expect(found_merchant[:data][:id].to_i).to eq(@merchant.id)
+            expect(found_merchant[:data][:attributes][:name]).to eq(@merchant.name)
         end
     end
 
