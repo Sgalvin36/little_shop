@@ -8,7 +8,6 @@ class Api::V1::ItemsController < ApplicationController
               else
                 Item.all
               end
-
       render json: ItemSerializer.new(@items)
     end
 
@@ -49,7 +48,11 @@ class Api::V1::ItemsController < ApplicationController
     end
 
     def not_complete_response(exception)
-        render json: ErrorSerializer.serialize(exception, "422"), status: :unprocessable_entity
+        if exception.message.include?('Merchant')
+            render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
+        else
+            render json: ErrorSerializer.serialize(exception, "422"), status: :unprocessable_entity
+        end
     end
 end
 
