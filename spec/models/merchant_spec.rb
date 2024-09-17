@@ -40,8 +40,15 @@ RSpec.describe Merchant, type: :model do
             expect(Merchant.sorted_by_created_at).to eq([merchants[2], merchants[1], merchants[0]])
         end
 
-        # it "filters by status" do
+        it "filters by status" do
+            Merchant.destroy_all
+            merchants = create_list(:merchant, 3)
+            customer = create(:customer)
+            create(:invoice, merchant_id: merchants[0].id, status: "returned", customer_id: customer.id)
+            create(:invoice, merchant_id: merchants[1].id, status: "returned", customer_id: customer.id)
 
-        # end
+            expect(Merchant.filter_by_status).to eq([merchants[0], merchants[1]])
+
+        end
     end
 end
