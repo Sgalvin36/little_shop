@@ -31,7 +31,7 @@ class Api::V1::ItemsController < ApplicationController
         render json: Item.destroy(params[:id]), status: 204
     end
 
-    def find
+    def find_all
       items = Item.filter_params(params)
   
       render json: ItemSerializer.new(items)

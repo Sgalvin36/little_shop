@@ -175,6 +175,24 @@ RSpec.describe Merchant do
             expect(merchant_items[:data][0][:attributes][:merchant_id].to_i).to eq(@merchants[0].id)  
             
         end
+        
+        it "returns expected error message when changed parameter is blank" do
+            merchant_id = Merchant.create!(name:"Steve").id
+
+            previous_merchant = Merchant.last.name
+            merchant_params = { name: '' }
+            headers = {"CONTENT_TYPE" => "application/json"}
+            
+            patch "/api/v1/merchants/#{merchant_id}", headers: headers, params: JSON.generate({merchant: merchant_params})
+
+            expected = {
+                errors: ["Validation failed: Name can't be blank"],
+                message: "Your status code is 400"
+            } 
+            response_body = JSON.parse(response.body, symbolize_names: true)
+
+            expect(response_body).to eq(expected)
+        end
     end
     
     describe "#destroy" do
