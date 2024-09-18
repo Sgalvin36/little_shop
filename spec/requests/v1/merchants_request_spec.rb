@@ -226,6 +226,24 @@ RSpec.describe Merchant do
             expect(found_merchant[:data][:id].to_i).to eq(@merchant.id)
             expect(found_merchant[:data][:attributes][:name]).to eq(@merchant.name)
         end
+
+        describe "SAD path" do
+            it "responds gracefully when no merchant is found" do
+                @merchant = Merchant.create!(name: "Kaelin")
+                get "/api/v1/merchants/find?name=ze"
+    
+                expected_error = {
+                    "message": "Your status code is 404",
+                    "errors": ["Merchant not found"]
+                }
+                
+                expect(response).to_not be_successful
+                expect(response.status).to eq(404)
+                error = JSON.parse(response.body, symbolize_names: true)
+
+                expect(error).to eq(expected_error)
+            end
+        end
     end
 
 end

@@ -60,7 +60,7 @@ class Api::V1::MerchantsController < ApplicationController
             if merchants.any?
                 render json: MerchantSerializer.new(merchants.first)
             else
-                render json: { error: 'Merchant not found' }, status: :not_found
+                render json: ErrorSerializer.custom_error("Merchant not found", "200"), status: :ok
             end
         else
             render json: { error: 'Name parameter cannot be empty' }, status: :bad_request

@@ -12,4 +12,12 @@ class ErrorSerializer
         "errors": "No records found for id"
       }
     end
+
+    def self.custom_error(error, status)
+      { "data": {
+          "message": "Your status code is #{status}",
+          "errors": error.split(", ")
+        }
+      }
+    end
 end
