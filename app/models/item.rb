@@ -42,9 +42,6 @@ class Item < ApplicationRecord
     elsif params.include?(:name)
       name = params[:name]
       where("name ILIKE?", "%#{name}%")
-      
-    else
-      return all
     end
   end
 
