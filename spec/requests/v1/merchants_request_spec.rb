@@ -106,7 +106,7 @@ RSpec.describe Merchant do
                 data = JSON.parse(response.body, symbolize_names: true)
 
                 expect(data[:message]).to eq("Your status code is 404")
-                expect(data[:errors]).to eq("Couldn't find Merchant with 'id'=12345678998765432")
+                expect(data[:errors]).to eq(["Couldn't find Merchant with 'id'=12345678998765432"])
             end
         end
     end
@@ -131,9 +131,16 @@ RSpec.describe Merchant do
 
         it "returns an error if name attribute is missing" do
             headers = { "CONTENT_TYPE" => "application/json" }
-            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" })            
+            post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: { name: "" }) 
+            
+            expected = {
+                    errors: ["Validation failed: Name can't be blank"],
+                    message: "Your status code is 400"
+                } 
             expect(response.status).to eq(400)
-            expect(JSON.parse(response.body)["errors"]).to include("Name can't be blank")
+            response_body = JSON.parse(response.body, symbolize_names: true)
+    
+            expect(response_body).to eq(expected)
         end
     end
 
@@ -168,6 +175,24 @@ RSpec.describe Merchant do
             expect(merchant_items[:data][0][:attributes][:merchant_id].to_i).to eq(@merchants[0].id)  
             
         end
+        
+        it "returns expected error message when changed parameter is blank" do
+            merchant_id = Merchant.create!(name:"Steve").id
+
+            previous_merchant = Merchant.last.name
+            merchant_params = { name: '' }
+            headers = {"CONTENT_TYPE" => "application/json"}
+            
+            patch "/api/v1/merchants/#{merchant_id}", headers: headers, params: JSON.generate({merchant: merchant_params})
+
+            expected = {
+                errors: ["Validation failed: Name can't be blank"],
+                message: "Your status code is 400"
+            } 
+            response_body = JSON.parse(response.body, symbolize_names: true)
+
+            expect(response_body).to eq(expected)
+        end
     end
     
     describe "#destroy" do
@@ -200,6 +225,42 @@ RSpec.describe Merchant do
 
             expect(found_merchant[:data][:id].to_i).to eq(@merchant.id)
             expect(found_merchant[:data][:attributes][:name]).to eq(@merchant.name)
+        end
+
+        describe "SAD path" do
+            it "responds gracefully when no merchant is found" do
+                @merchant = Merchant.create!(name: "Kaelin")
+                get "/api/v1/merchants/find?name=ze"
+    
+                expected_error = { "data": {
+                    "message": "Your status code is 200",
+                    "errors": ["Merchant not found"]
+                    }
+                }
+                
+                expect(response).to be_successful
+                expect(response.status).to eq(200)
+                error = JSON.parse(response.body, symbolize_names: true)
+
+                expect(error).to eq(expected_error)
+            end
+
+            it "responds gracefully when no name is entered" do
+                @merchant = Merchant.create!(name: "Kaelin")
+                get "/api/v1/merchants/find?name="
+    
+                expected_error = { "data": {
+                    "message": "Your status code is 400",
+                    "errors": ["Name parameter cannot be empty"]
+                    }
+                }
+                
+                expect(response).to_not be_successful
+                expect(response.status).to eq(400)
+                error = JSON.parse(response.body, symbolize_names: true)
+
+                expect(error).to eq(expected_error)
+            end 
         end
     end
 

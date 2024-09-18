@@ -31,10 +31,14 @@ class Api::V1::ItemsController < ApplicationController
         render json: Item.destroy(params[:id]), status: 204
     end
 
-    def find
-      items = Item.filter_params(params)
-  
-      render json: ItemSerializer.new(items)
+    def find_all
+      check = Item.param_check(params)
+      if check == 4
+        items = Item.filter_params(params)
+        render json: ItemSerializer.new(items)
+      else
+        render json: ErrorSerializer.custom_error(check, '400'), status: :bad_request
+      end
     end
     
     private
