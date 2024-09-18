@@ -355,8 +355,41 @@ describe "Items API" do
 
         expect(found_items[:data][0][:id].to_i).to eq(@items[0].id)
         expect(found_items[:data][0][:attributes][:name]).to eq(@items[0].name)
+    end
 
+    it "finds all items based on partial search" do
+        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+        
+        search = "op"
+        get "/api/v1/items/find_all?name=#{search}"
 
+        expect(response).to be_successful
+
+        found_items= JSON.parse(response.body, symbolize_names: true)
+        expect(found_items[:data].count).to be >= 3
+    end
+
+    it "responds gracefully to no search parameters" do
+        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+        
+        search = ""
+        get "/api/v1/items/find_all?name=#{search}"
+
+        expected_error = { "data": {
+            "message": "Your status code is 400",
+            "errors": ["Name query cannot be blank"]
+            }
+        }
+
+        expect(response).to_not be_successful
+        expect(response.status).to eq(400)
+        error = JSON.parse(response.body, symbolize_names: true)
+
+        expect(error).to eq(expected_error)
     end
 
     it 'filter items by min_price' do
