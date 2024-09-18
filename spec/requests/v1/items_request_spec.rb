@@ -335,6 +335,8 @@ describe "Items API" do
         end
     end
 
+    describe "find by search" do
+
     it "returns merchant data for a given item ID" do
         
         get "/api/v1/items/#{@items[1].id}/merchant"
