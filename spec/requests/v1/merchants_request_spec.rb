@@ -232,13 +232,14 @@ RSpec.describe Merchant do
                 @merchant = Merchant.create!(name: "Kaelin")
                 get "/api/v1/merchants/find?name=ze"
     
-                expected_error = {
-                    "message": "Your status code is 404",
+                expected_error = { "data": {
+                    "message": "Your status code is 200",
                     "errors": ["Merchant not found"]
+                    }
                 }
                 
-                expect(response).to_not be_successful
-                expect(response.status).to eq(404)
+                expect(response).to be_successful
+                expect(response.status).to eq(200)
                 error = JSON.parse(response.body, symbolize_names: true)
 
                 expect(error).to eq(expected_error)

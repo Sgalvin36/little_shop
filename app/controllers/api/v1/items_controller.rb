@@ -32,9 +32,13 @@ class Api::V1::ItemsController < ApplicationController
     end
 
     def find_all
-      items = Item.filter_params(params)
-  
-      render json: ItemSerializer.new(items)
+      check = Item.param_check(params)
+      if check == 4
+        items = Item.filter_params(params)
+        render json: ItemSerializer.new(items)
+      else
+        render json: ErrorSerializer.custom_error(check, '400'), status: :bad_request
+      end
     end
     
     private
