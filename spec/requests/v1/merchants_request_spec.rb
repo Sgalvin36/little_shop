@@ -244,6 +244,23 @@ RSpec.describe Merchant do
 
                 expect(error).to eq(expected_error)
             end
+
+            it "responds gracefully when no name is entered" do
+                @merchant = Merchant.create!(name: "Kaelin")
+                get "/api/v1/merchants/find?name="
+    
+                expected_error = { "data": {
+                    "message": "Your status code is 400",
+                    "errors": ["Name parameter cannot be empty"]
+                    }
+                }
+                
+                expect(response).to_not be_successful
+                expect(response.status).to eq(400)
+                error = JSON.parse(response.body, symbolize_names: true)
+
+                expect(error).to eq(expected_error)
+            end 
         end
     end
 

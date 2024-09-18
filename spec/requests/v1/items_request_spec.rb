@@ -337,117 +337,118 @@ describe "Items API" do
 
     describe "find by search" do
 
-    it "returns merchant data for a given item ID" do
+        it "returns merchant data for a given item ID" do
+            
+            get "/api/v1/items/#{@items[1].id}/merchant"
         
-        get "/api/v1/items/#{@items[1].id}/merchant"
-    
-        expect(response).to be_successful 
+            expect(response).to be_successful 
 
-        merchant_items = JSON.parse(response.body, symbolize_names: true)
-    
-        expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
-    end 
-    
-    it "finds all items based on search criteria" do
-        get "/api/v1/items/find_all?name=#{@items[0].name}"
-
-        expect(response).to be_successful
-
-        found_items= JSON.parse(response.body, symbolize_names: true)
-
-        expect(found_items[:data][0][:id].to_i).to eq(@items[0].id)
-        expect(found_items[:data][0][:attributes][:name]).to eq(@items[0].name)
-    end
-
-    it "finds all items based on partial search" do
-        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
-        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
-        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+            merchant_items = JSON.parse(response.body, symbolize_names: true)
         
-        search = "op"
-        get "/api/v1/items/find_all?name=#{search}"
-
-        expect(response).to be_successful
-
-        found_items= JSON.parse(response.body, symbolize_names: true)
-        expect(found_items[:data].count).to be >= 3
-    end
-
-    it "responds gracefully to empty search parameters" do
-        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
-        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
-        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+            expect(merchant_items[:data][:id]).to eq(@merchant.id.to_s)  
+        end 
         
-        search = ""
-        get "/api/v1/items/find_all?name=#{search}"
+        it "finds all items based on search criteria" do
+            get "/api/v1/items/find_all?name=#{@items[0].name}"
 
-        expected_error = { "data": {
-            "message": "Your status code is 400",
-            "errors": ["Name query cannot be blank"]
-            }
-        }
+            expect(response).to be_successful
 
-        expect(response).to_not be_successful
-        expect(response.status).to eq(400)
-        error = JSON.parse(response.body, symbolize_names: true)
+            found_items= JSON.parse(response.body, symbolize_names: true)
 
-        expect(error).to eq(expected_error)
-    end
-
-    it "responds gracefully to no search parameters" do
-        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
-        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
-        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
-        
-        search = ""
-        get "/api/v1/items/find_all?"
-
-        expected_error = { "data": {
-            "message": "Your status code is 400",
-            "errors": ["No queries provided"]
-            }
-        }
-
-        expect(response).to_not be_successful
-        expect(response.status).to eq(400)
-        error = JSON.parse(response.body, symbolize_names: true)
-
-        expect(error).to eq(expected_error)
-    end
-
-    it 'filter items by min_price' do
-        get '/api/v1/items/find_all?min_price=10.00'
-
-        expect(response).to be_successful
-
-        filter_items = JSON.parse(response.body, symbolize_names: true)
-
-        filter_items[:data].each do |item|
-            expect(item[:attributes][:unit_price]).to be >= 10.00
+            expect(found_items[:data][0][:id].to_i).to eq(@items[0].id)
+            expect(found_items[:data][0][:attributes][:name]).to eq(@items[0].name)
         end
-    end
 
-    it 'filter items by max_price' do
-        get '/api/v1/items/find_all?max_price=20.00'
+        it "finds all items based on partial search" do
+            item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+            item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+            item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+            
+            search = "op"
+            get "/api/v1/items/find_all?name=#{search}"
 
-        expect(response).to be_successful
+            expect(response).to be_successful
 
-        filter_items = JSON.parse(response.body, symbolize_names: true)
-
-        filter_items[:data].each do |item|
-            expect(item[:attributes][:unit_price]).to be <= 20.00
+            found_items= JSON.parse(response.body, symbolize_names: true)
+            expect(found_items[:data].count).to be >= 3
         end
-    end
 
-    it 'filter items by min_price and max_price' do
-        get '/api/v1/items/find_all?min_price=10.00&max_price=20.00'
+        it "responds gracefully to empty search parameters" do
+            item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+            item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+            item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+            
+            search = ""
+            get "/api/v1/items/find_all?name=#{search}"
 
-        expect(response).to be_successful
+            expected_error = { "data": {
+                "message": "Your status code is 400",
+                "errors": ["Name query cannot be blank"]
+                }
+            }
 
-        filter_items = JSON.parse(response.body, symbolize_names: true)
+            expect(response).to_not be_successful
+            expect(response.status).to eq(400)
+            error = JSON.parse(response.body, symbolize_names: true)
 
-        filter_items[:data].each do |item|
-            expect(item[:attributes][:unit_price]).to be_between(10.00, 20.00)
+            expect(error).to eq(expected_error)
+        end
+
+        it "responds gracefully to no search parameters" do
+            item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+            item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+            item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+            
+            search = ""
+            get "/api/v1/items/find_all?"
+
+            expected_error = { "data": {
+                "message": "Your status code is 400",
+                "errors": ["No queries provided"]
+                }
+            }
+
+            expect(response).to_not be_successful
+            expect(response.status).to eq(400)
+            error = JSON.parse(response.body, symbolize_names: true)
+
+            expect(error).to eq(expected_error)
+        end
+
+        it 'filter items by min_price' do
+            get '/api/v1/items/find_all?min_price=10.00'
+
+            expect(response).to be_successful
+
+            filter_items = JSON.parse(response.body, symbolize_names: true)
+
+            filter_items[:data].each do |item|
+                expect(item[:attributes][:unit_price]).to be >= 10.00
+            end
+        end
+
+        it 'filter items by max_price' do
+            get '/api/v1/items/find_all?max_price=20.00'
+
+            expect(response).to be_successful
+
+            filter_items = JSON.parse(response.body, symbolize_names: true)
+
+            filter_items[:data].each do |item|
+                expect(item[:attributes][:unit_price]).to be <= 20.00
+            end
+        end
+
+        it 'filter items by min_price and max_price' do
+            get '/api/v1/items/find_all?min_price=10.00&max_price=20.00'
+
+            expect(response).to be_successful
+
+            filter_items = JSON.parse(response.body, symbolize_names: true)
+
+            filter_items[:data].each do |item|
+                expect(item[:attributes][:unit_price]).to be_between(10.00, 20.00)
+            end
         end
     end
 end
