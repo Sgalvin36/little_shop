@@ -91,4 +91,31 @@ describe "Merchant Invoices API" do
             expect(invoice[:attributes][:merchant_id]).to eq(@merchant.id)
         end
     end
+
+    describe "Sad Path" do
+        it "handles exception when no id is given" do
+            get "/api/v1/merchants//invoices"
+            
+            expected = {
+                errors: ["Couldn't find Merchant with 'id'=invoices"],
+                message: "Your status code is 404"
+            } 
+
+            response_body = JSON.parse(response.body, symbolize_names: true)
+
+            expect(response_body).to eq(expected)
+        end
+
+        it "handles exception when wrong id is given" do
+            get "/api/v1/merchants/1304958345131234/invoices"
+            
+            expected = {
+                errors: ["Couldn't find Merchant with 'id'=1304958345131234"],
+                message: "Your status code is 404"
+            } 
+            response_body = JSON.parse(response.body, symbolize_names: true)
+
+            expect(response_body).to eq(expected)
+        end
+    end
 end

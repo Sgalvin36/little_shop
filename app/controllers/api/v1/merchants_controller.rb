@@ -1,7 +1,7 @@
 class Api::V1::MerchantsController < ApplicationController
-    # rescue_from ActiveRecord::RecordNotFound, with: :not_found_response
+    rescue_from ActiveRecord::RecordInvalid, with: :not_found_response
     rescue_from ActionController::ParameterMissing, with: :not_found_response
-     
+
     def index
         merchants = Merchant.all
 
@@ -29,10 +29,8 @@ class Api::V1::MerchantsController < ApplicationController
     end
 
     def create
-       begin
-            # merchant = Merchant.new(merchant_params)
+        begin
             merchant = Merchant.create!(merchant_params)
-            # binding.pry
             render json: MerchantSerializer.new(merchant), status: :created
         rescue ActiveRecord::RecordInvalid => exception
             render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
@@ -40,19 +38,14 @@ class Api::V1::MerchantsController < ApplicationController
     end
 
     def update
-       merchant = Merchant.find(params[:id])
-       
-       if merchant.update(merchant_params)
-            render json: MerchantSerializer.new(merchant).serializable_hash.to_json
-       else
-            render json: ErrorSerializer.serialize(merchant.errors, "400"), status: :bad_request
-       end
+        merchant = Merchant.find(params[:id])
+        merchant.update!(merchant_params)
+        render json: MerchantSerializer.new(merchant)
     end
 
     def destroy
-       merchant = Merchant.find(params[:id])
-       merchant.destroy
-       head :no_content
+        merchant = Merchant.find(params[:id])
+        render json: merchant.destroy, status:204
     end
 
     def find
@@ -61,10 +54,10 @@ class Api::V1::MerchantsController < ApplicationController
             if merchants.any?
                 render json: MerchantSerializer.new(merchants.first)
             else
-                render json: { error: 'Merchant not found' }, status: :not_found
+                render json: ErrorSerializer.custom_error("Merchant not found", "200"), status: :ok
             end
         else
-            render json: { error: 'Name parameter cannot be empty' }, status: :bad_request
+            render json: ErrorSerializer.custom_error("Name parameter cannot be empty", "400"), status: :bad_request
         end
     end
 
@@ -73,16 +66,8 @@ private
     def merchant_params
         params.require(:merchant).permit(:name)
     end
+
     def not_found_response(exception)
         render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
     end
-
-    def not_complete_response(exception)
-        if exception.message.include?('Merchant')
-            render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
-        else
-            render json: ErrorSerializer.serialize(exception, "422"), status: :unprocessable_entity
-        end
-    end
-
 end

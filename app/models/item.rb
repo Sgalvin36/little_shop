@@ -8,6 +8,23 @@ class Item < ApplicationRecord
     order(unit_price: :asc)
   end
 
+  def self.param_check(params)
+    if params.include?(:name) && (params.include?(:min_price) || params.include?(:max_price))
+      "Cannot send name and price together"
+    elsif params.include?(:min_price) && params[:min_price].to_i < 0
+      "Minimum price needs to be greater than 0"
+    elsif params.include?(:max_price) && params[:max_price].to_i < 0
+      "Maximum price needs to be greater than 0"
+    elsif params.include?(:name) && params[:name] == ""
+      "Name query cannot be blank"
+    elsif !params.include?(:name) && !params.include?(:min_price) && !params.include?(:max_price)
+      "No queries provided"
+    else
+      4
+    end
+  end
+
+
   def self.filter_params(params)
     if params.include?(:max_price) && params.include?(:min_price)
       min_price = params[:min_price]
@@ -25,9 +42,6 @@ class Item < ApplicationRecord
     elsif params.include?(:name)
       name = params[:name]
       where("name ILIKE?", "%#{name}%")
-      
-    else
-      return all
     end
   end
 
