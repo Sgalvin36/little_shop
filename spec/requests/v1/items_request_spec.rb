@@ -371,7 +371,7 @@ describe "Items API" do
         expect(found_items[:data].count).to be >= 3
     end
 
-    it "responds gracefully to no search parameters" do
+    it "responds gracefully to empty search parameters" do
         item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
         item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
         item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
@@ -382,6 +382,27 @@ describe "Items API" do
         expected_error = { "data": {
             "message": "Your status code is 400",
             "errors": ["Name query cannot be blank"]
+            }
+        }
+
+        expect(response).to_not be_successful
+        expect(response.status).to eq(400)
+        error = JSON.parse(response.body, symbolize_names: true)
+
+        expect(error).to eq(expected_error)
+    end
+
+    it "responds gracefully to no search parameters" do
+        item1 = create(:item, merchant_id: @merchant.id, name: "Funko-Pops")
+        item2 = create(:item, merchant_id: @merchant.id, name: "Pop-Pops")
+        item3 = create(:item, merchant_id: @merchant.id, name: "Opposites")
+        
+        search = ""
+        get "/api/v1/items/find_all?"
+
+        expected_error = { "data": {
+            "message": "Your status code is 400",
+            "errors": ["No queries provided"]
             }
         }
 

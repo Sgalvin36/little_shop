@@ -17,6 +17,8 @@ class Item < ApplicationRecord
       "Maximum price needs to be greater than 0"
     elsif params.include?(:name) && params[:name] == ""
       "Name query cannot be blank"
+    elsif !params.include?(:name) && !params.include?(:min_price) && !params.include?(:max_price)
+      "No queries provided"
     else
       4
     end
