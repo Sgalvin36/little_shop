@@ -69,16 +69,4 @@ private
     def not_found_response(exception)
         render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
     end
-
-    def not_complete_response(exception)
-        if exception.message.include?('Merchant')
-            render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
-        else
-            render json: ErrorSerializer.serialize(exception, "422"), status: :unprocessable_entity
-        end
-    end
-
-    def not_found_response(exception)
-        render json: ErrorSerializer.serialize(exception, "400"), status: :bad_request
-    end
 end
